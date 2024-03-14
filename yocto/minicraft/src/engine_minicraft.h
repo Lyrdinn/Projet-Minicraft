@@ -8,7 +8,10 @@
 
 
 class MEngineMinicraft : public YEngine {
+	YVbo* Fbo;
 	YVbo* VboCube;
+	YVbo* VboSun;
+	int boostTime;
 	MWorld* World;
 	GLuint ShaderSun = 0;
 	GLuint ShaderCube = 0;
@@ -45,11 +48,19 @@ public :
 		VboCube->setElementDescription(2, YVbo::Element(3)); //Couleur
 
 		VboCube->createVboCpu();
-
 		CreateCube(VboCube, 0, 0, 0, 2);
-
 		VboCube->createVboGpu();
 		VboCube->deleteVboCpu();
+
+		VboSun = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
+		VboSun->setElementDescription(0, YVbo::Element(3)); //Sommet
+		VboSun->setElementDescription(1, YVbo::Element(4)); //Normale
+		VboSun->setElementDescription(2, YVbo::Element(3)); //Couleur
+
+		VboSun->createVboCpu();
+		CreateCube(VboSun, 0, 0, 30, 20);
+		VboSun->createVboGpu();
+		VboSun->deleteVboCpu();
 
 		Renderer->setBackgroundColor(YColor(0.0f,0.0f,0.0f,1.0f));
 		Renderer->Camera->setPosition(YVec3f(10, 10, 10));
@@ -59,6 +70,67 @@ public :
 		World = new MWorld();
 		World->init_world(0);
 	}
+
+	void update(float elapsed) 
+	{
+		boostTime += elapsed;
+		updateLights(boostTime);
+	}
+
+	void renderObjects() 
+	{
+		glUseProgram(0);
+		//Rendu des axes
+		glDisable(GL_LIGHTING);
+		glBegin(GL_LINES);
+		glColor3d(1, 0, 0);
+		glVertex3d(0, 0, 0);
+		glVertex3d(10000, 0, 0);
+		glColor3d(0, 1, 0);
+		glVertex3d(0, 0, 0);
+		glVertex3d(0, 10000, 0);
+		glColor3d(0, 0, 1);
+		glVertex3d(0, 0, 0);
+		glVertex3d(0, 0, 10000);
+		glEnd();
+
+		//Ne montre pas le calcul de SunPosition et SunColor...
+		glPushMatrix();
+		glUseProgram(ShaderSun);
+		GLuint sun = glGetUniformLocation(ShaderSun, "sun_color");
+		glUniform3f(sun, SunColor.R, SunColor.V, SunColor.B);
+		glTranslatef(SunPosition.X, SunPosition.Y, SunPosition.Z);
+		glScalef(10, 10, 10);
+		Renderer->updateMatricesFromOgl();
+		Renderer->sendMatricesToShader(ShaderSun);
+		VboSun->render();
+		glPopMatrix();
+
+		//Shader du world
+		glPushMatrix();
+		glUseProgram(ShaderWorld);
+		Renderer->sendTimeToShader(DeltaTimeCumul, ShaderWorld);
+		GLuint var = glGetUniformLocation(ShaderWorld, "sunPos");
+		glUniform3f(var, SunPosition.X, SunPosition.Y, SunPosition.Z);
+		World->render_world_vbo(false, true);
+		glPopMatrix();
+
+		//Pour dessiner le monde (fonction à coder ensuite)
+		glPushMatrix();
+		glUseProgram(ShaderCube);
+		World->render_world_basic(ShaderCube, VboCube);
+		glPopMatrix();
+		//Shader cube
+		//glPushMatrix();
+		//glUseProgram(ShaderCube);
+		//Renderer->updateMatricesFromOgl();
+		//Renderer->sendMatricesToShader(ShaderCube);
+		//GLuint var2 = glGetUniformLocation(ShaderCube, "cube_color");
+		//glUniform4f(var2, 40.0f / 255.0f, 25.0f / 255.0f, 0.0f, 1.0f)
+		//glPopMatrix();
+	}
+
+	/* CUBE AND SUN */
 
 	void CreateCube(YVbo* vbo, int x, int y, int z, float size = 5.0f)
 	{
@@ -130,67 +202,6 @@ public :
 		return 6;
 	}
 
-	void update(float elapsed) 
-	{
-		updateLights(elapsed);
-	}
-
-	void renderObjects() 
-	{
-		glUseProgram(0);
-		//Rendu des axes
-		glDisable(GL_LIGHTING);
-		glBegin(GL_LINES);
-		glColor3d(1, 0, 0);
-		glVertex3d(0, 0, 0);
-		glVertex3d(10000, 0, 0);
-		glColor3d(0, 1, 0);
-		glVertex3d(0, 0, 0);
-		glVertex3d(0, 10000, 0);
-		glColor3d(0, 0, 1);
-		glVertex3d(0, 0, 0);
-		glVertex3d(0, 0, 10000);
-		glEnd();
-
-		//Ne montre pas le calcul de SunPosition et SunColor...
-		//glPushMatrix();
-		//glUseProgram(ShaderSun);
-		//GLuint var = glGetUniformLocation(ShaderSun, "sun_color");
-		//glUniform3f(var, SunColor.R, SunColor.V, SunColor.B);
-		//glTranslatef(SunPosition.X, SunPosition.Y, SunPosition.Z);
-		//glScalef(10, 10, 10);
-		//Renderer->updateMatricesFromOgl();
-		//Renderer->sendMatricesToShader(ShaderSun);
-
-		glPushMatrix();
-		glUseProgram(ShaderWorld);
-
-		Renderer->sendTimeToShader(DeltaTimeCumul, ShaderWorld);
-		GLuint var = glGetUniformLocation(ShaderWorld, "sunPos");
-		glUniform3f(var, SunPosition.X, SunPosition.Y, SunPosition.Z);
-
-		World->render_world_vbo(false, true);
-		glPopMatrix();
-
-		//Shader cube
-		//glPushMatrix();
-		//glUseProgram(ShaderCube);
-		//Renderer->updateMatricesFromOgl();
-		//Renderer->sendMatricesToShader(ShaderCube);
-		//GLuint var2 = glGetUniformLocation(ShaderCube, "cube_color");
-		//glUniform4f(var2, 40.0f / 255.0f, 25.0f / 255.0f, 0.0f, 1.0f);
-		//VboCube->render();
-		//glPopMatrix();
-
-		//Pour dessiner le monde (fonction à coder ensuite)
-		glPushMatrix();
-		glUseProgram(ShaderCube);
-		World->render_world_basic(ShaderCube, VboCube);
-		glPopMatrix();
-	}
-
-
-
 	bool getSunDirFromDayTime(YVec3f& sunDir, float mnLever, float mnCoucher, float boostTime)
 	{
 		bool nuit = false;
@@ -261,6 +272,7 @@ public :
 		}
 
 		Renderer->setBackgroundColor(SkyColor);
+		VboSun->render();
 	}
 
 
@@ -268,11 +280,14 @@ public :
 	
 	}
 
-	/*INPUTS*/
+	/* INPUTS */
 
 	void keyPressed(int key, bool special, bool down, int p1, int p2) 
-	{	
-
+	{
+		if (key == 103 && down)
+		{
+			boostTime += 10;
+		}
 	}
 
 	void mouseWheel(int wheel, int dir, int x, int y, bool inUi)
