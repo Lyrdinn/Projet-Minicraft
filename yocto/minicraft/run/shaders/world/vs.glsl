@@ -25,9 +25,7 @@ flat out float type;
 
 float noise(vec4 position)
 {
-    return 0.5f * sin(position.x / 3 + elapsed) 
-    + 0.25f * sin((position.y+position.x) + elapsed) 
-    - 1;
+    return .5f*sin(position.x/3 + elapsed)-1;
 }
 
 void main()

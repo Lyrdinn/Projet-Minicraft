@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <stdio.h>
 
@@ -52,7 +52,7 @@ public :
 
 		CUBE_STAIRS,
 		CUBE_NB_TYPES
-	}; //Limité à 128 types
+	}; //LimitÃ© Ã  128 types
 
 	static const int CUBE_DRAW_BIT = 0x80;
 

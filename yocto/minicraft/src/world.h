@@ -6,94 +6,94 @@
 #include "engine/utils/types_3d.h"
 #include "cube.h"
 #include "chunk.h"
-#include "engine/noise/mperlin.h"
+#include "engine/noise/perlin.h"
 
 class MWorld
 {
-public :
+public:
 	typedef uint8 MAxis;
 	static const int AXIS_X = 0b00000001;
 	static const int AXIS_Y = 0b00000010;
 	static const int AXIS_Z = 0b00000100;
+	YPerlin Perlin;
 
-	#ifdef _DEBUG
-	static const int MAT_SIZE = 1; //en nombre de chunks
-	#else
+#ifdef _DEBUG
+	static const int MAT_SIZE = 2; //en nombre de chunks
+#else
 	static const int MAT_SIZE = 3; //en nombre de chunks
-	#endif // DEBUG
+#endif // DEBUG
 
 	static const int MAT_HEIGHT = 1; //en nombre de chunks
 	static const int MAT_SIZE_CUBES = (MAT_SIZE * MChunk::CHUNK_SIZE);
 	static const int MAT_HEIGHT_CUBES = (MAT_HEIGHT * MChunk::CHUNK_SIZE);
 	static const int MAT_SIZE_METERS = (MAT_SIZE * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE);
-	static const int MAT_HEIGHT_METERS = (MAT_HEIGHT * MChunk::CHUNK_SIZE  * MCube::CUBE_SIZE);
+	static const int MAT_HEIGHT_METERS = (MAT_HEIGHT * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE);
 
-	MChunk * Chunks[MAT_SIZE][MAT_SIZE][MAT_HEIGHT];
-	MPerlin Perlin;
-	
+	MChunk* Chunks[MAT_SIZE][MAT_SIZE][MAT_HEIGHT];
+
 	MWorld()
 	{
 		//On crée les chunks
-		for(int x=0;x<MAT_SIZE;x++)
-			for(int y=0;y<MAT_SIZE;y++)
-				for(int z=0;z<MAT_HEIGHT;z++)
-					Chunks[x][y][z] = new MChunk(x,y,z);
+		for (int x = 0; x < MAT_SIZE; x++)
+			for (int y = 0; y < MAT_SIZE; y++)
+				for (int z = 0; z < MAT_HEIGHT; z++)
+					Chunks[x][y][z] = new MChunk(x, y, z);
 
-		for(int x=0;x<MAT_SIZE;x++)
-			for(int y=0;y<MAT_SIZE;y++)
-				for(int z=0;z<MAT_HEIGHT;z++)
+		for (int x = 0; x < MAT_SIZE; x++)
+			for (int y = 0; y < MAT_SIZE; y++)
+				for (int z = 0; z < MAT_HEIGHT; z++)
 				{
-					MChunk * cxPrev = NULL;
-					if(x > 0)
-						cxPrev = Chunks[x-1][y][z];
-					MChunk * cxNext = NULL;
-					if(x < MAT_SIZE-1)
-						cxNext = Chunks[x+1][y][z];
+					MChunk* cxPrev = NULL;
+					if (x > 0)
+						cxPrev = Chunks[x - 1][y][z];
+					MChunk* cxNext = NULL;
+					if (x < MAT_SIZE - 1)
+						cxNext = Chunks[x + 1][y][z];
 
-					MChunk * cyPrev = NULL;
-					if(y > 0)
-						cyPrev = Chunks[x][y-1][z];
-					MChunk * cyNext = NULL;
-					if(y < MAT_SIZE-1)
-						cyNext = Chunks[x][y+1][z];
+					MChunk* cyPrev = NULL;
+					if (y > 0)
+						cyPrev = Chunks[x][y - 1][z];
+					MChunk* cyNext = NULL;
+					if (y < MAT_SIZE - 1)
+						cyNext = Chunks[x][y + 1][z];
 
-					MChunk * czPrev = NULL;
-					if(z > 0)
-						czPrev = Chunks[x][y][z-1];
-					MChunk * czNext = NULL;
-					if(z < MAT_HEIGHT-1)
-						czNext = Chunks[x][y][z+1];
+					MChunk* czPrev = NULL;
+					if (z > 0)
+						czPrev = Chunks[x][y][z - 1];
+					MChunk* czNext = NULL;
+					if (z < MAT_HEIGHT - 1)
+						czNext = Chunks[x][y][z + 1];
 
-					Chunks[x][y][z]->setVoisins(cxPrev,cxNext,cyPrev,cyNext,czPrev,czNext);
+					Chunks[x][y][z]->setVoisins(cxPrev, cxNext, cyPrev, cyNext, czPrev, czNext);
 				}
 
-					
+
 	}
 
-	inline MCube * getCube(int x, int y, int z)
-	{	
-		if(x < 0)x = 0;
-		if(y < 0)y = 0;
-		if(z < 0)z = 0;
-		if(x >= MAT_SIZE * MChunk::CHUNK_SIZE) x = (MAT_SIZE * MChunk::CHUNK_SIZE)-1;
-		if(y >= MAT_SIZE * MChunk::CHUNK_SIZE) y = (MAT_SIZE * MChunk::CHUNK_SIZE)-1;
-		if(z >= MAT_HEIGHT * MChunk::CHUNK_SIZE) z = (MAT_HEIGHT * MChunk::CHUNK_SIZE)-1;
+	inline MCube* getCube(int x, int y, int z)
+	{
+		if (x < 0)x = 0;
+		if (y < 0)y = 0;
+		if (z < 0)z = 0;
+		if (x >= MAT_SIZE * MChunk::CHUNK_SIZE) x = (MAT_SIZE * MChunk::CHUNK_SIZE) - 1;
+		if (y >= MAT_SIZE * MChunk::CHUNK_SIZE) y = (MAT_SIZE * MChunk::CHUNK_SIZE) - 1;
+		if (z >= MAT_HEIGHT * MChunk::CHUNK_SIZE) z = (MAT_HEIGHT * MChunk::CHUNK_SIZE) - 1;
 
 		return &(Chunks[x / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][z / MChunk::CHUNK_SIZE]->_Cubes[x % MChunk::CHUNK_SIZE][y % MChunk::CHUNK_SIZE][z % MChunk::CHUNK_SIZE]);
 	}
 
-    void updateCube(int x, int y, int z)
-	{	
-		if(x < 0)x = 0;
-		if(y < 0)y = 0;
-		if(z < 0)z = 0;
-		if(x >= MAT_SIZE * MChunk::CHUNK_SIZE)x = (MAT_SIZE * MChunk::CHUNK_SIZE)-1;
-		if(y >= MAT_SIZE * MChunk::CHUNK_SIZE)y = (MAT_SIZE * MChunk::CHUNK_SIZE)-1;
-		if (z >= MAT_HEIGHT * MChunk::CHUNK_SIZE)z = (MAT_HEIGHT * MChunk::CHUNK_SIZE) - 1; 
-		
+	void updateCube(int x, int y, int z)
+	{
+		if (x < 0)x = 0;
+		if (y < 0)y = 0;
+		if (z < 0)z = 0;
+		if (x >= MAT_SIZE * MChunk::CHUNK_SIZE)x = (MAT_SIZE * MChunk::CHUNK_SIZE) - 1;
+		if (y >= MAT_SIZE * MChunk::CHUNK_SIZE)y = (MAT_SIZE * MChunk::CHUNK_SIZE) - 1;
+		if (z >= MAT_HEIGHT * MChunk::CHUNK_SIZE)z = (MAT_HEIGHT * MChunk::CHUNK_SIZE) - 1;
+
 		Chunks[x / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][z / MChunk::CHUNK_SIZE]->disableHiddenCubes();
 		Chunks[x / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][z / MChunk::CHUNK_SIZE]->toVbos();
-		
+
 		if ((x - 1) / MChunk::CHUNK_SIZE > 0 && (x - 1) / MChunk::CHUNK_SIZE != x / MChunk::CHUNK_SIZE) {
 			Chunks[(x - 1) / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][z / MChunk::CHUNK_SIZE]->disableHiddenCubes();
 			Chunks[(x - 1) / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][z / MChunk::CHUNK_SIZE]->toVbos();
@@ -123,26 +123,24 @@ public :
 			Chunks[x / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][(z + 1) / MChunk::CHUNK_SIZE]->disableHiddenCubes();
 			Chunks[x / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][(z + 1) / MChunk::CHUNK_SIZE]->toVbos();
 		}
-		
+
 	}
 
 	void deleteCube(int x, int y, int z)
 	{
-		MCube * cube = getCube(x,y,z);
+		MCube* cube = getCube(x, y, z);
 		cube->setType(MCube::CUBE_AIR);
 		cube->setDraw(false);
-		cube = getCube(x-1,y,z);
-		updateCube(x,y,z);	
+		cube = getCube(x - 1, y, z);
+		updateCube(x, y, z);
 	}
-			
+
 	void init_world(int seed)
 	{
 		YLog::log(YLog::USER_INFO, (toString("Creation du monde seed ") + toString(seed)).c_str());
 
 		srand(seed);
-		Perlin.updateVecs();
 
-		Perlin.setZDecay(MWorld::MAT_HEIGHT_CUBES - 5, 0.5f);
 
 		//Reset du monde
 		for (int x = 0; x < MAT_SIZE; x++)
@@ -154,23 +152,28 @@ public :
 			for (int y = 0; y < MAT_SIZE_CUBES; y++)
 				for (int z = 0; z < MAT_HEIGHT_CUBES; z++)
 				{
-					Perlin.DoPenaltyMiddle = true;
-					Perlin.setFreq(0.04f);
-					float val = Perlin.sample((float)x, (float)y, (float)z);
-					Perlin.DoPenaltyMiddle = false;
-					Perlin.setFreq(0.2f);
-					val -= (1.0f - max(val, Perlin.sample((float)x, (float)y, (float)z))) / 20.0f;
+					Perlin.setFreq(0.09f);
+					float isHole = Perlin.sample((float)x, (float)y, (float)z) + (float)z / 200;
+
+					Perlin.setFreq(0.05f);
+					float val = Perlin.sample((float)x, (float)y, 0.0f) - (float)z / 200;
 
 					MCube* cube = getCube(x, y, z);
-
-					if (val > 0.5f)
-						cube->setType(MCube::CUBE_HERBE);
-					if (val > 0.51f)
-						cube->setType(MCube::CUBE_TERRE);
-					if (val < 0.5 && z <= 0.1)
+					if (!isHole <= .58f)
+					{
+						if (val > 0.66 || z == 0)
+							cube->setType(MCube::CUBE_EAU);
+						if (val > 0.5f)
+							cube->setType(MCube::CUBE_HERBE);
+						if (val > 0.51f)
+							cube->setType(MCube::CUBE_TERRE);
+						if (val > 0.53f)
+							cube->setType(MCube::CUBE_PIERRE);
+					}
+					if (z < 5 && cube->getType() == MCube::CUBE_AIR)
 						cube->setType(MCube::CUBE_EAU);
-					if (val > 0.56)
-						cube->setType(MCube::CUBE_EAU);
+					if ((val < 0.5 && z <= 0.1) || cube->getType() == MCube::CUBE_PIERRE)
+						cube->setType(MCube::CUBE_PIERRE);
 				}
 
 		for (int x = 0; x < MAT_SIZE; x++)
@@ -182,19 +185,18 @@ public :
 	}
 
 
-
 	void add_world_to_vbo(void)
 	{
-		for (int x = 0; x<MAT_SIZE; x++)
-			for (int y = 0; y<MAT_SIZE; y++)
-				for (int z = 0; z<MAT_HEIGHT; z++)
+		for (int x = 0; x < MAT_SIZE; x++)
+			for (int y = 0; y < MAT_SIZE; y++)
+				for (int z = 0; z < MAT_HEIGHT; z++)
 				{
 					Chunks[x][y][z]->toVbos();
 				}
 	}
-	
+
 	//Boites de collisions plus petites que deux cubes
-	MAxis getMinCol(YVec3f pos, YVec3f dir, float width, float height, float & valueColMin, bool oneShot)
+	MAxis getMinCol(YVec3f pos, YVec3f dir, float width, float height, float& valueColMin, bool oneShot)
 	{
 		int x = (int)(pos.X / MCube::CUBE_SIZE);
 		int y = (int)(pos.Y / MCube::CUBE_SIZE);
@@ -392,12 +394,12 @@ public :
 
 		return axis;
 	}
-		
+
 	void render_world_basic(GLuint shader, YVbo* vboCube)
 	{
-		for (int x = MAT_SIZE_CUBES - 1; x >= 0; x--)
-			for (int y = MAT_SIZE_CUBES - 1; y >= 0; y--)
-				for (int z = MAT_HEIGHT_CUBES - 1; z >= 0; z--)
+		for (int x = 0; x < MAT_SIZE_CUBES; x++)
+			for (int y = 0; y < MAT_SIZE_CUBES; y++)
+				for (int z = 0; z < MAT_SIZE_CUBES; z++)
 				{
 					MCube* cube = getCube(x, y, z);
 					MCube::MCubeType type = cube->getType();
@@ -423,25 +425,49 @@ public :
 				}
 	}
 
-
-	void render_world_vbo(bool debug,bool doTransparent)
+	void render_world_vbo(bool debug, bool doTransparent)
 	{
 		glDisable(GL_BLEND);
-		//Dessiner les chunks opaques
-				
+		for (int x = 0; x < MAT_SIZE; x++)
+			for (int y = 0; y < MAT_SIZE; y++)
+				for (int z = MAT_HEIGHT - 1; z >= 0; z--)
+				{
+					glPushMatrix();
+					glTranslatef((float)(x * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE), (float)(y * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE), (float)(z * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE));
+					YRenderer::getInstance()->updateMatricesFromOgl();
+					YRenderer::getInstance()->sendMatricesToShader(YRenderer::CURRENT_SHADER);
+					Chunks[x][y][z]->render(false);
+					glPopMatrix();
+				}
+
+
 		glEnable(GL_BLEND);
-		//Dessiner les chunks transparents
+		if (doTransparent)
+		{
+			for (int x = 0; x < MAT_SIZE; x++)
+				for (int y = 0; y < MAT_SIZE; y++)
+					for (int z = 0; z < MAT_HEIGHT; z++)
+					{
+						glPushMatrix();
+						glTranslatef((float)(x * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE), (float)(y * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE), (float)(z * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE));
+						YRenderer::getInstance()->updateMatricesFromOgl();
+						YRenderer::getInstance()->sendMatricesToShader(YRenderer::CURRENT_SHADER);
+						Chunks[x][y][z]->render(true);
+						glPopMatrix();
+					}
+		}
+		glDepthMask(true);
 	}
 
 	/**
 	* Attention ce code n'est pas optimal, il est compréhensible. Il existe de nombreuses
 	* versions optimisées de ce calcul.
 	*/
-	inline bool intersecDroitePlan(const YVec3f & debSegment, const  YVec3f & finSegment,
-		const YVec3f & p1Plan, const YVec3f & p2Plan, const YVec3f & p3Plan,
-		YVec3f & inter)
+	inline bool intersecDroitePlan(const YVec3f& debSegment, const  YVec3f& finSegment,
+		const YVec3f& p1Plan, const YVec3f& p2Plan, const YVec3f& p3Plan,
+		YVec3f& inter)
 	{
-		
+
 		return true;
 	}
 
@@ -449,34 +475,32 @@ public :
 	* Attention ce code n'est pas optimal, il est compréhensible. Il existe de nombreuses
 	* versions optimisées de ce calcul. Il faut donner les points dans l'ordre (CW ou CCW)
 	*/
-	inline bool intersecDroiteCubeFace(const YVec3f & debSegment, const YVec3f & finSegment,
-		const YVec3f & p1, const YVec3f & p2, const YVec3f & p3, const  YVec3f & p4,
-		YVec3f & inter)
+	inline bool intersecDroiteCubeFace(const YVec3f& debSegment, const YVec3f& finSegment,
+		const YVec3f& p1, const YVec3f& p2, const YVec3f& p3, const  YVec3f& p4,
+		YVec3f& inter)
 	{
-		
+
 		return false;
 	}
 
-	bool getRayCollision(const YVec3f & debSegment, const YVec3f & finSegment,
-		YVec3f & inter,
-		int &xCube, int&yCube, int&zCube)
+	bool getRayCollision(const YVec3f& debSegment, const YVec3f& finSegment,
+		YVec3f& inter,
+		int& xCube, int& yCube, int& zCube)
 	{
-		
+
 		return false;
 	}
 
 	/**
 	* De meme cette fonction peut être grandement opitimisée, on a priviligié la clarté
 	*/
-	bool getRayCollisionWithCube(const YVec3f & debSegment, const YVec3f & finSegment,
+	bool getRayCollisionWithCube(const YVec3f& debSegment, const YVec3f& finSegment,
 		int x, int y, int z,
-		YVec3f & inter)
+		YVec3f& inter)
 	{
 
 		return true;
 	}
 };
-
-
 
 #endif
