@@ -36,13 +36,13 @@ void main()
 
 	vec3 toLight = normalize(sunPos);
 
-    vec3 SunColorDur = sunColor;
+    vec3 SunColorDur = vec3(sunColor);
 
     vec3 newNorm = normal;
 
     float specular = 0;
 
-        if(type == CUBE_EAU)
+    if(type == CUBE_EAU)
     {
         vec4 A = wPos;
         vec4 B = wPos + vec4(0.2f,0,0,0);
@@ -68,6 +68,6 @@ void main()
 
     //color_out = vec4(toCam,1);
     
-    //color_out = vec4(sqrt(color.xyz * (diffuse + specular) * 0.97 + 0.03 * vec3(0.8,0.9,1)),color.a);
+    //color_out = vec4(sqrt(color.xyz * (diffuse + specular) * 0.97 + 0.03 * sunColor),color.a);
 
 }

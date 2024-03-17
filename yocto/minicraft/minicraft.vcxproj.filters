@@ -65,7 +65,7 @@
     <ClInclude Include="..\src\engine\render\camera.h">
       <Filter>Fichiers d%27en-tête\engine\render</Filter>
     </ClInclude>
-    <ClInclude Include="mperlin.h">
+    <ClInclude Include="src\mperlin.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

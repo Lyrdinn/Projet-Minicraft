@@ -5,6 +5,7 @@
 #include "external/gl/freeglut.h" 
 #include "engine/utils/types_3d.h"
 #include "engine/noise/perlin.h"
+#include "mperlin.h"
 #include "cube.h"
 #include "chunk.h"
 
@@ -15,7 +16,7 @@ public:
 	static const int AXIS_X = 0b00000001;
 	static const int AXIS_Y = 0b00000010;
 	static const int AXIS_Z = 0b00000100;
-	YPerlin Perlin;
+	MPerlin Perlin;
 
 #ifdef _DEBUG
 	static const int MAT_SIZE = 2; //en nombre de chunks

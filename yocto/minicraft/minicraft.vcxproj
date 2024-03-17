@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\src\engine\noise\perlin.h" />
     <ClInclude Include="..\src\engine\render\camera.h" />
-    <ClInclude Include="mperlin.h" />
+    <ClInclude Include="src\mperlin.h" />
     <ClInclude Include="src\avatar.h" />
     <ClInclude Include="src\chunk.h" />
     <ClInclude Include="src\cube.h" />

@@ -23,6 +23,7 @@ class MEngineMinicraft : public YEngine {
 	MWorld* World;
 	GLuint ShaderSun = 0;
 	GLuint ShaderWorld = 0;
+	GLuint ShaderPostProcess = 0;
 	YColor SunColor;
 	YColor SkyColor;
 	YVec3<float> SunPosition = YVec3<float>(1.0f, 1.0f, 1.0f);
@@ -41,6 +42,7 @@ public :
 	void loadShaders() {
 		ShaderSun = Renderer->createProgram("shaders/sun");
 		ShaderWorld = Renderer->createProgram("shaders/world");
+		ShaderPostProcess = Renderer->createProgram("shaders/postprocess");
 	}
 
 	void init() 
@@ -97,6 +99,8 @@ public :
 
 	void renderObjects()
 	{
+		Fbo->setAsOutFBO(true);
+
 		glUseProgram(0);
 		//Rendu des axes
 		glDisable(GL_LIGHTING);
@@ -112,9 +116,9 @@ public :
 		glVertex3d(0, 0, 10000);
 		glEnd();
 
+		//Shader world
 		glPushMatrix();
 		glUseProgram(ShaderWorld);
-
 		//On envoie au shader world nos parametres
 		YRenderer::getInstance()->sendTimeToShader(YEngine::getInstance()->DeltaTimeCumul, YRenderer::CURRENT_SHADER);
 		GLuint sunPosParam = glGetUniformLocation(ShaderWorld, "sunPos");
@@ -122,15 +126,13 @@ public :
 		GLuint sunColorParam = glGetUniformLocation(ShaderWorld, "sunColor");
 		glUniform3f(sunColorParam, SunColor.R, SunColor.V, SunColor.B);
 		GLuint camPosParam = glGetUniformLocation(ShaderWorld, "camPos");
-		YVec3 camPos = Renderer->Camera->Position;
-		glUniform3f(camPosParam, camPos.X, camPos.Y, camPos.Z);
+		glUniform3f(camPosParam, Camera->Position.X, Camera->Position.Y, Camera->Position.Z);
 		
 
 		World->render_world_vbo(false, true);
 		glPopMatrix();
 
-		//Exemple d'utilisation d'un shader
-		//Ne montre pas le calcul de SunPosition et SunColor...
+		//Shader Sun
 		glPushMatrix();
 		glUseProgram(ShaderSun);
 		GLuint sunPosParam2 = glGetUniformLocation(ShaderSun, "sunColor");
@@ -139,10 +141,37 @@ public :
 		glScalef(10, 10, 10);
 		Renderer->updateMatricesFromOgl();
 		Renderer->sendMatricesToShader(ShaderSun);
+
 		VboSun->render();
 		glPopMatrix();
 
-		VboCube->render(); // Demande le rendu de la generation procedurale
+		//Post Process
+		Fbo->setAsOutFBO(false);
+
+		glUseProgram(ShaderPostProcess);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+		Fbo->setColorAsShaderInput(0, GL_TEXTURE0, "TexColor");
+		Fbo->setDepthAsShaderInput(GL_TEXTURE1, "TexDepth");
+		Fbo->setAsOutFBO(false);
+
+		glUseProgram(ShaderPostProcess);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+
+		Fbo->setColorAsShaderInput(0, GL_TEXTURE0, "TexColor");
+		Fbo->setDepthAsShaderInput(GL_TEXTURE1, "TexDepth");
+
+		GLuint var3 = glGetUniformLocation(ShaderPostProcess, "sky_color");
+		glUniform3f(var3, SkyColor.R, SkyColor.V, SkyColor.B);
+
+		Renderer->sendScreenSizeToShader(ShaderPostProcess);
+		Renderer->sendNearFarToShader(ShaderPostProcess);
+		Renderer->drawFullScreenQuad();
+
+		// Demande le rendu de la generation procedurale
+		VboCube->render();
+
 	}
 
 	/* CUBE AND SUN */
