@@ -7,23 +7,26 @@
 #include "world.h"
 
 class MEngineMinicraft : public YEngine {
-	YVbo* Fbo;
-	YVbo* VboOpaque;
-	YVbo* VboTransparent;
+	//Objets géometriques
+	YFbo* Fbo;
 	YVbo* VboCube;
 	YVbo* VboSun;
-	int _NbVertices_Opaque = 36;
-	int _NbVertices_Transparent = 36;
+
+	//Avatar
+	YCamera* Camera = new YCamera();
+	MAvatar* Avatar;
+	YVec3f prevMousePos = { -1,-1,-1 };
+	float camSpeed = 5.f;
 	int boostTime;
+
+	//World et shaders
 	MWorld* World;
 	GLuint ShaderSun = 0;
-	GLuint ShaderCube = 0;
 	GLuint ShaderWorld = 0;
 	YColor SunColor;
 	YColor SkyColor;
 	YVec3<float> SunPosition = YVec3<float>(1.0f, 1.0f, 1.0f);
 	YVec3<float> SunDirection = YVec3<float>(1.0f, 1.0f, 1.0f);
-	static const int CHUNK_SIZE = MChunk::CHUNK_SIZE;
 
 public :
 	//Gestion singleton
@@ -37,12 +40,18 @@ public :
 	/*HANDLERS GENERAUX*/
 	void loadShaders() {
 		ShaderSun = Renderer->createProgram("shaders/sun");
-		ShaderCube = Renderer->createProgram("shaders/cube");
 		ShaderWorld = Renderer->createProgram("shaders/world");
 	}
 
 	void init() 
 	{
+		//On cree le FBO pour le post process
+		Fbo = new YFbo(1);
+		Fbo->init(Renderer->ScreenWidth, Renderer->ScreenHeight);
+
+		Renderer->setBackgroundColor(YColor(0.0f, 0.0f, 0.0f, 1.0f));
+
+		//Cube pour la génération procédurale
 		YLog::log(YLog::ENGINE_INFO,"Minicraft Started : initialisation");
 
 		VboCube = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
@@ -55,6 +64,7 @@ public :
 		VboCube->createVboGpu();
 		VboCube->deleteVboCpu();
 
+		//Cube pour le soleil
 		VboSun = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
 		VboSun->setElementDescription(0, YVbo::Element(3)); //Sommet
 		VboSun->setElementDescription(1, YVbo::Element(4)); //Normale
@@ -64,13 +74,15 @@ public :
 		fillVBOCube(VboSun, 0, 0, 10, 2);
 		VboSun->createVboGpu();
 		VboSun->deleteVboCpu();
+		
+		//Caméra
+		Camera->setPosition(YVec3f((MWorld::MAT_SIZE_METERS) / 2, (MWorld::MAT_SIZE_METERS) / 2, (MWorld::MAT_HEIGHT_METERS)));
+		Camera->setLookAt(YVec3f());
+		Renderer->Camera = Camera;
 
-		Renderer->setBackgroundColor(YColor(0.0f,0.0f,0.0f,1.0f));
-		Renderer->Camera->setPosition(YVec3f(10, 10, 10));
-		Renderer->Camera->setLookAt(YVec3f());
-
-		//Pour créer le monde
+		//World et avatar
 		World = new MWorld();
+		Avatar = new MAvatar(Camera, World);
 		World->init_world(0);
 	}
 
@@ -78,6 +90,9 @@ public :
 	{
 		boostTime += elapsed;
 		updateLights(boostTime);
+		Avatar->update(elapsed);
+		Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
+		Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
 	}
 
 	void renderObjects()
@@ -100,9 +115,16 @@ public :
 		glPushMatrix();
 		glUseProgram(ShaderWorld);
 
+		//On envoie au shader world nos parametres
 		YRenderer::getInstance()->sendTimeToShader(YEngine::getInstance()->DeltaTimeCumul, YRenderer::CURRENT_SHADER);
 		GLuint sunPosParam = glGetUniformLocation(ShaderWorld, "sunPos");
 		glUniform3f(sunPosParam, SunPosition.X, SunPosition.Y, SunPosition.Z);
+		GLuint sunColorParam = glGetUniformLocation(ShaderWorld, "sunColor");
+		glUniform3f(sunColorParam, SunColor.R, SunColor.V, SunColor.B);
+		GLuint camPosParam = glGetUniformLocation(ShaderWorld, "camPos");
+		YVec3 camPos = Renderer->Camera->Position;
+		glUniform3f(camPosParam, camPos.X, camPos.Y, camPos.Z);
+		
 
 		World->render_world_vbo(false, true);
 		glPopMatrix();
@@ -111,8 +133,8 @@ public :
 		//Ne montre pas le calcul de SunPosition et SunColor...
 		glPushMatrix();
 		glUseProgram(ShaderSun);
-		GLuint var = glGetUniformLocation(ShaderSun, "sun_color");
-		glUniform3f(var, SunColor.R, SunColor.V, SunColor.B);
+		GLuint sunPosParam2 = glGetUniformLocation(ShaderSun, "sunColor");
+		glUniform3f(sunPosParam2, SunColor.R, SunColor.V, SunColor.B);
 		glTranslatef(SunPosition.X, SunPosition.Y, SunPosition.Z);
 		glScalef(10, 10, 10);
 		Renderer->updateMatricesFromOgl();
@@ -277,9 +299,47 @@ public :
 
 	void keyPressed(int key, bool special, bool down, int p1, int p2) 
 	{
-		if (key == 103 && down)
+		//Avancer le soleil
+		if (key == 'g' && down)
 		{
 			boostTime += 10;
+		}
+
+		/*if (down && key == 'z') {
+			Camera->move(Camera->Direction * camSpeed);
+		}
+		if (down && key == 's') {
+			Camera->move(-Camera->Direction * camSpeed);
+		}
+		if (down && key == 'q') {
+			Camera->move(-Camera->RightVec * camSpeed);
+		}
+		if (down && key == 'd') {
+			Camera->move(Camera->RightVec * camSpeed);
+		}*/
+
+		if (key == 'z')
+			Avatar->avance = down;
+		if (key == 's')
+			Avatar->recule = down;
+		if (key == 'q')
+			Avatar->gauche = down;
+		if (key == 'd')
+			Avatar->droite = down;
+		if (key == ' ')
+			Avatar->Jump = down;
+		if (key == 'u')
+			Avatar->Crouch = down;
+		if (key == 'i')
+			Avatar->Run = down;
+
+		if (key == 'e' && !down) {
+			int xC, yC, zC;
+			YVec3f inter;
+			World->getRayCollision(Camera->Position,
+				Camera->Position + Camera->Direction * 30,
+				inter, xC, yC, zC);
+			World->deleteCube(xC, yC, zC);
 		}
 	}
 

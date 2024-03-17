@@ -4,9 +4,9 @@
 #include "external/gl/glew.h"
 #include "external/gl/freeglut.h" 
 #include "engine/utils/types_3d.h"
+#include "engine/noise/perlin.h"
 #include "cube.h"
 #include "chunk.h"
-#include "engine/noise/perlin.h"
 
 class MWorld
 {
@@ -467,26 +467,63 @@ public:
 		const YVec3f& p1Plan, const YVec3f& p2Plan, const YVec3f& p3Plan,
 		YVec3f& inter)
 	{
+		//Equation du plan :
+		YVec3f nrmlAuPlan = (p1Plan - p2Plan).cross(p3Plan - p2Plan); //On a les a,b,c du ax+by+cz+d = 0
+		float d = -(nrmlAuPlan.X * p2Plan.X + nrmlAuPlan.Y * p2Plan.Y + nrmlAuPlan.Z * p2Plan.Z); //On remarque que c'est un produit scalaire...
+
+		//Equation de droite :
+		YVec3f dirDroite = finSegment - debSegment;
+
+		//On resout l'équation de plan
+		float nominateur = -d - nrmlAuPlan.X * debSegment.X - nrmlAuPlan.Y * debSegment.Y - nrmlAuPlan.Z * debSegment.Z;
+		float denominateur = nrmlAuPlan.X * dirDroite.X + nrmlAuPlan.Y * dirDroite.Y + nrmlAuPlan.Z * dirDroite.Z;
+
+		if (denominateur == 0)
+			return false;
+
+		//Calcul de l'intersection
+		float t = nominateur / denominateur;
+		inter = debSegment + (dirDroite * t);
+
+		//Si point avant le debut du segment
+		if (t < 0 || t > 1)
+			return false;
 
 		return true;
 	}
 
 	/**
-	* Attention ce code n'est pas optimal, il est compréhensible. Il existe de nombreuses
-	* versions optimisées de ce calcul. Il faut donner les points dans l'ordre (CW ou CCW)
-	*/
+		* Attention ce code n'est pas optimal, il est compréhensible. Il existe de nombreuses
+		* versions optimisées de ce calcul. Il faut donner les points dans l'ordre (CW ou CCW)
+		*/
 	inline bool intersecDroiteCubeFace(const YVec3f& debSegment, const YVec3f& finSegment,
 		const YVec3f& p1, const YVec3f& p2, const YVec3f& p3, const  YVec3f& p4,
 		YVec3f& inter)
 	{
+		//On calcule l'intersection
+		bool res = intersecDroitePlan(debSegment, finSegment, p1, p2, p4, inter);
 
-		return false;
-	}
+		if (!res)
+			return false;
 
-	bool getRayCollision(const YVec3f& debSegment, const YVec3f& finSegment,
-		YVec3f& inter,
-		int& xCube, int& yCube, int& zCube)
-	{
+		//On fait les produits vectoriels
+		YVec3f v1 = p2 - p1;
+		YVec3f v2 = p3 - p2;
+		YVec3f v3 = p4 - p3;
+		YVec3f v4 = p1 - p4;
+
+		YVec3f n1 = v1.cross(inter - p1);
+		YVec3f n2 = v2.cross(inter - p2);
+		YVec3f n3 = v3.cross(inter - p3);
+		YVec3f n4 = v4.cross(inter - p4);
+
+		//on compare le signe des produits scalaires
+		float ps1 = n1.dot(n2);
+		float ps2 = n2.dot(n3);
+		float ps3 = n3.dot(n4);
+
+		if (ps1 >= 0 && ps2 >= 0 && ps3 >= 0)
+			return true;
 
 		return false;
 	}
@@ -498,9 +535,170 @@ public:
 		int x, int y, int z,
 		YVec3f& inter)
 	{
+		float minDist = -1;
+		YVec3f interTemp;
+
+		//Face1
+		if (intersecDroiteCubeFace(debSegment, finSegment,
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			interTemp))
+		{
+			if ((interTemp - debSegment).getSqrSize() < minDist || minDist == -1)
+			{
+				minDist = (interTemp - debSegment).getSqrSize();
+				inter = interTemp;
+			}
+		}
+
+		//Face2
+		if (intersecDroiteCubeFace(debSegment, finSegment,
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			interTemp))
+		{
+			if ((interTemp - debSegment).getSqrSize() < minDist || minDist == -1)
+			{
+				minDist = (interTemp - debSegment).getSqrSize();
+				inter = interTemp;
+			}
+		}
+
+		//Face3
+		if (intersecDroiteCubeFace(debSegment, finSegment,
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			interTemp))
+		{
+			if ((interTemp - debSegment).getSqrSize() < minDist || minDist == -1)
+			{
+				minDist = (interTemp - debSegment).getSqrSize();
+				inter = interTemp;
+			}
+		}
+
+		//Face4
+		if (intersecDroiteCubeFace(debSegment, finSegment,
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			interTemp))
+		{
+			if ((interTemp - debSegment).getSqrSize() < minDist || minDist == -1)
+			{
+				minDist = (interTemp - debSegment).getSqrSize();
+				inter = interTemp;
+			}
+		}
+
+		//Face5
+		if (intersecDroiteCubeFace(debSegment, finSegment,
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			YVec3f((x + 0) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			interTemp))
+		{
+			if ((interTemp - debSegment).getSqrSize() < minDist || minDist == -1)
+			{
+				minDist = (interTemp - debSegment).getSqrSize();
+				inter = interTemp;
+			}
+		}
+
+		//Face6
+		if (intersecDroiteCubeFace(debSegment, finSegment,
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 0) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 1) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			YVec3f((x + 1) * MCube::CUBE_SIZE, (y + 0) * MCube::CUBE_SIZE, (z + 1) * MCube::CUBE_SIZE),
+			interTemp))
+		{
+			if ((interTemp - debSegment).getSqrSize() < minDist || minDist == -1)
+			{
+				minDist = (interTemp - debSegment).getSqrSize();
+				inter = interTemp;
+			}
+		}
+
+
+		if (minDist < 0)
+			return false;
 
 		return true;
 	}
+
+	bool getRayCollision(const YVec3f& debSegment, const YVec3f& finSegment,
+		YVec3f& inter,
+		int& xCube, int& yCube, int& zCube)
+	{
+		float len = (finSegment - debSegment).getSize();
+
+		int x = (int)(debSegment.X / MCube::CUBE_SIZE);
+		int y = (int)(debSegment.Y / MCube::CUBE_SIZE);
+		int z = (int)(debSegment.Z / MCube::CUBE_SIZE);
+
+		int l = (int)(len / MCube::CUBE_SIZE) + 1;
+
+		int xDeb = x - l;
+		int yDeb = y - l;
+		int zDeb = z - l;
+
+		int xFin = x + l;
+		int yFin = y + l;
+		int zFin = z + l;
+
+		if (xDeb < 0)
+			xDeb = 0;
+		if (yDeb < 0)
+			yDeb = 0;
+		if (zDeb < 0)
+			zDeb = 0;
+
+		if (xFin >= MAT_SIZE_CUBES)
+			xFin = MAT_SIZE_CUBES - 1;
+		if (yFin >= MAT_SIZE_CUBES)
+			yFin = MAT_SIZE_CUBES - 1;
+		if (zFin >= MAT_HEIGHT_CUBES)
+			zFin = MAT_HEIGHT_CUBES - 1;
+
+		float minDist = -1;
+		YVec3f interTmp;
+		for (x = xDeb; x <= xFin; x++)
+			for (y = yDeb; y <= yFin; y++)
+				for (z = zDeb; z <= zFin; z++)
+				{
+					if (getCube(x, y, z)->isSolid())
+					{
+						if (getRayCollisionWithCube(debSegment, finSegment, x, y, z, interTmp))
+						{
+							if ((debSegment - interTmp).getSqrSize() < minDist || minDist == -1)
+							{
+								minDist = (debSegment - interTmp).getSqrSize();
+								inter = interTmp;
+								xCube = x;
+								yCube = y;
+								zCube = z;
+
+							}
+						}
+					}
+				}
+
+		if (minDist != -1)
+			return true;
+
+		return false;
+
+	}
+
 };
 
 #endif
