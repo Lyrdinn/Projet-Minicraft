@@ -31,7 +31,7 @@ public:
 	static const int MAT_HEIGHT_METERS = (MAT_HEIGHT * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE);
 	static const int SURFACE_LEVEL = MWorld::MAT_HEIGHT_CUBES - 45;
 
-	static const int NB_OF_TREES_GEN = 400;
+	static const int NB_OF_TREES_GEN = 1000;
 	static const int MAX_NB_TREES = 100;
 
 	MChunk* Chunks[MAT_SIZE][MAT_SIZE][MAT_HEIGHT];
@@ -232,18 +232,15 @@ public:
 
 		//Else if we are in the dirt we recursevely check if we are in the correct surface plane else we go higher to
 		//still try to place our tree
-		else
-		{
-			int trunk_slot = z + 1;
-			cube = getCube(x, y, trunk_slot);
+		int trunk_slot = z + 1;
+		cube = getCube(x, y, trunk_slot);
 
-			if (cube->getType() == MCube::CUBE_AIR)
-			{
-				create_tree(x, y, z);
-				return true;
-			}
-			return can_place_tree(x, y, z + 1);
+		if (cube->getType() == MCube::CUBE_AIR)
+		{
+			create_tree(x, y, z);
+			return true;
 		}
+		return can_place_tree(x, y, z + 1);
 	}
 
 	void create_tree(int x, int y, int z)
