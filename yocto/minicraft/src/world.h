@@ -32,7 +32,7 @@ public:
 	static const int SURFACE_LEVEL = MWorld::MAT_HEIGHT_CUBES - 45;
 
 	static const int NB_OF_TREES_GEN = 400;
-	static const int MAX_NB_TREES = 40;
+	static const int MAX_NB_TREES = 100;
 
 	MChunk* Chunks[MAT_SIZE][MAT_SIZE][MAT_HEIGHT];
 
@@ -147,7 +147,7 @@ public:
 		srand(seed);
 		Perlin.updateVecs();
 
-		Perlin.setZDecay(MWorld::MAT_HEIGHT_CUBES - 5, 0.5f);
+		Perlin.setZDecay(MWorld::MAT_HEIGHT_CUBES - 10, 0.5f);
 
 		//Reset du monde
 		for (int x = 0; x < MAT_SIZE; x++)
@@ -157,7 +157,7 @@ public:
 
 		for (int x = 0; x < MAT_SIZE_CUBES; x++)
 			for (int y = 0; y < MAT_SIZE_CUBES; y++)
-				for (int z = 0; z < MAT_HEIGHT_CUBES; z++)
+				for (int z = MAT_HEIGHT_CUBES; z > 0; z--)
 				{
 					Perlin.DoPenaltyMiddle = true;
 					Perlin.setFreq(0.04f);
@@ -169,7 +169,13 @@ public:
 					MCube* cube = getCube(x, y, z);
 
 					if (val > 0.5f)
+					{
 						cube->setType(MCube::CUBE_HERBE);
+
+						//int rand_tree = rand() % 100 + 0;
+						//if (rand_tree < 1)
+						//can_place_tree(x, y, z + 1);
+					}
 					if (val > 0.51f)
 						cube->setType(MCube::CUBE_TERRE);
 					if (val < 0.5 && z <= 0.1)
@@ -220,44 +226,30 @@ public:
 	{
 		MCube* cube = getCube(x, y, z - 1);
 
-		//Return false if we place it on top of the air or the water
-		if (cube->getType() == MCube::CUBE_EAU || cube->getType() == MCube::CUBE_AIR) return false;
+		//Return false if we don't place it on top of dirt or herb or we place it in water.
+		if (cube->getType() != MCube::CUBE_TERRE && cube -> getType() != MCube::CUBE_HERBE) return false;
+		if (getCube(x, y, z) ->getType() == MCube::CUBE_EAU) return false;
 
-		//If we don't plant it in the air but on the surface because we may be planting underground
-		//we check if we can push up our starting trunk point
-		if (cube->getType() != MCube::CUBE_AIR)
+		//Else if we are in the dirt we recursevely check if we are in the correct surface plane else we go higher to
+		//still try to place our tree
+		else
 		{
-			//If our cube is of type water we immediatly return false
-			if (cube->getType() == MCube::CUBE_EAU) return false;
-
 			int trunk_slot = z + 1;
 			cube = getCube(x, y, trunk_slot);
 
-			while (cube->getType() != MCube::CUBE_AIR)
+			if (cube->getType() == MCube::CUBE_AIR)
 			{
-				trunk_slot += 1;
-				cube = getCube(x, y, trunk_slot);
-
-				//Loop break so we don't search for too long
-				if (trunk_slot > z + 8)
-				{
-					if (cube->getType() != MCube::CUBE_AIR) return false;
-					break;
-				}
+				create_tree(x, y, z);
+				return true;
 			}
-
-			//If our cube is of type water we immediatly return false
-			if (cube->getType() == MCube::CUBE_EAU) return false;
-
-			create_tree(x, y, trunk_slot);
-			return true;
+			return can_place_tree(x, y, z + 1);
 		}
 	}
 
 	void create_tree(int x, int y, int z)
 	{
 		//Random trunk size between 3 and 6;
-		int tree_size = rand() % 5 + 3;
+		int tree_size = rand() % 4 + 2;
 
 		//We fill our trunk
 		for (int trunk = 0; trunk < tree_size; trunk++)
@@ -278,7 +270,7 @@ public:
 					if (rand_leaf <= 75)
 					{
 						MCube* cube = getCube(x2, y2, z2);
-						cube->setType(MCube::CUBE_HERBE);
+						cube->setType(MCube::CUBE_BRANCHES);
 					}
 				}
 			}
