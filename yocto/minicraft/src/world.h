@@ -29,6 +29,10 @@ public:
 	static const int MAT_HEIGHT_CUBES = (MAT_HEIGHT * MChunk::CHUNK_SIZE);
 	static const int MAT_SIZE_METERS = (MAT_SIZE * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE);
 	static const int MAT_HEIGHT_METERS = (MAT_HEIGHT * MChunk::CHUNK_SIZE * MCube::CUBE_SIZE);
+	static const int SURFACE_LEVEL = MWorld::MAT_HEIGHT_CUBES - 45;
+
+	static const int NB_OF_TREES_GEN = 400;
+	static const int MAX_NB_TREES = 40;
 
 	MChunk* Chunks[MAT_SIZE][MAT_SIZE][MAT_HEIGHT];
 
@@ -141,7 +145,9 @@ public:
 		YLog::log(YLog::USER_INFO, (toString("Creation du monde seed ") + toString(seed)).c_str());
 
 		srand(seed);
+		Perlin.updateVecs();
 
+		Perlin.setZDecay(MWorld::MAT_HEIGHT_CUBES - 5, 0.5f);
 
 		//Reset du monde
 		for (int x = 0; x < MAT_SIZE; x++)
@@ -153,29 +159,28 @@ public:
 			for (int y = 0; y < MAT_SIZE_CUBES; y++)
 				for (int z = 0; z < MAT_HEIGHT_CUBES; z++)
 				{
-					Perlin.setFreq(0.09f);
-					float isHole = Perlin.sample((float)x, (float)y, (float)z) + (float)z / 200;
-
-					Perlin.setFreq(0.05f);
-					float val = Perlin.sample((float)x, (float)y, 0.0f) - (float)z / 200;
+					Perlin.DoPenaltyMiddle = true;
+					Perlin.setFreq(0.04f);
+					float val = Perlin.sample((float)x, (float)y, (float)z);
+					Perlin.DoPenaltyMiddle = false;
+					Perlin.setFreq(0.2f);
+					val -= (1.0f - max(val, Perlin.sample((float)x, (float)y, (float)z))) / 20.0f;
 
 					MCube* cube = getCube(x, y, z);
-					if (!isHole <= .58f)
-					{
-						if (val > 0.66 || z == 0)
-							cube->setType(MCube::CUBE_EAU);
-						if (val > 0.5f)
-							cube->setType(MCube::CUBE_HERBE);
-						if (val > 0.51f)
-							cube->setType(MCube::CUBE_TERRE);
-						if (val > 0.53f)
-							cube->setType(MCube::CUBE_PIERRE);
-					}
-					if (z < 5 && cube->getType() == MCube::CUBE_AIR)
+
+					if (val > 0.5f)
+						cube->setType(MCube::CUBE_HERBE);
+					if (val > 0.51f)
+						cube->setType(MCube::CUBE_TERRE);
+					if (val < 0.5 && z <= 0.1)
 						cube->setType(MCube::CUBE_EAU);
-					if ((val < 0.5 && z <= 0.1) || cube->getType() == MCube::CUBE_PIERRE)
+					if (val > 0.56)
+						cube->setType(MCube::CUBE_EAU);
+					if (z < 8)
 						cube->setType(MCube::CUBE_PIERRE);
 				}
+
+		place_trees();
 
 		for (int x = 0; x < MAT_SIZE; x++)
 			for (int y = 0; y < MAT_SIZE; y++)
@@ -185,6 +190,100 @@ public:
 		add_world_to_vbo();
 	}
 
+	void place_trees()
+	{
+		int x = 0;
+		int y = 0;
+		int z = 0;
+
+		int nb_trees_placed = 0;
+
+		for (int i = 0; i < NB_OF_TREES_GEN; i++)
+		{
+			//We find a random number between 3 and our map size -3 because we don't want our trees to be cut
+			//because of the map
+			x = rand() % (MAT_SIZE_CUBES - 3) + 3;
+			y = rand() % (MAT_SIZE_CUBES - 3) + 3;
+
+			//We go between our surface level to our maximum surface level
+			z = rand() % (SURFACE_LEVEL) + (SURFACE_LEVEL + 7);
+
+			if (can_place_tree(x, y, z))
+			{
+				nb_trees_placed += 1;
+				if (nb_trees_placed == MAX_NB_TREES) return;
+			}
+		}
+	}
+
+	bool can_place_tree(int x, int y, int z)
+	{
+		MCube* cube = getCube(x, y, z - 1);
+
+		//Return false if we place it on top of the air or the water
+		if (cube->getType() == MCube::CUBE_EAU || cube->getType() == MCube::CUBE_AIR) return false;
+
+		//If we don't plant it in the air but on the surface because we may be planting underground
+		//we check if we can push up our starting trunk point
+		if (cube->getType() != MCube::CUBE_AIR)
+		{
+			//If our cube is of type water we immediatly return false
+			if (cube->getType() == MCube::CUBE_EAU) return false;
+
+			int trunk_slot = z + 1;
+			cube = getCube(x, y, trunk_slot);
+
+			while (cube->getType() != MCube::CUBE_AIR)
+			{
+				trunk_slot += 1;
+				cube = getCube(x, y, trunk_slot);
+
+				//Loop break so we don't search for too long
+				if (trunk_slot > z + 8)
+				{
+					if (cube->getType() != MCube::CUBE_AIR) return false;
+					break;
+				}
+			}
+
+			//If our cube is of type water we immediatly return false
+			if (cube->getType() == MCube::CUBE_EAU) return false;
+
+			create_tree(x, y, trunk_slot);
+			return true;
+		}
+	}
+
+	void create_tree(int x, int y, int z)
+	{
+		//Random trunk size between 3 and 6;
+		int tree_size = rand() % 5 + 3;
+
+		//We fill our trunk
+		for (int trunk = 0; trunk < tree_size; trunk++)
+		{
+			MCube* cube = getCube(x, y, z + trunk);
+			cube->setType(MCube::CUBE_TRONC);
+		}
+
+		//We fill the trunk with our leaves
+		for (int x2 = x - 2; x2 < x + 2; x2++)
+		{
+			for (int y2 = y - 2; y2 < y + 2; y2++)
+			{
+				for (int z2 = z + tree_size - 1; z2 < z + tree_size + 3; z2++)
+				{
+					//75% of chance of adding a leaf
+					int rand_leaf = rand() % 100 + 1;
+					if (rand_leaf <= 75)
+					{
+						MCube* cube = getCube(x2, y2, z2);
+						cube->setType(MCube::CUBE_HERBE);
+					}
+				}
+			}
+		}
+	}
 
 	void add_world_to_vbo(void)
 	{

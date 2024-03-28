@@ -76,7 +76,7 @@ public :
 		fillVBOCube(VboSun, 0, 0, 10, 2);
 		VboSun->createVboGpu();
 		VboSun->deleteVboCpu();
-		
+
 		//Caméra
 		Camera->setPosition(YVec3f((MWorld::MAT_SIZE_METERS) / 2, (MWorld::MAT_SIZE_METERS) / 2, (MWorld::MAT_HEIGHT_METERS)));
 		Camera->setLookAt(YVec3f());
@@ -92,9 +92,9 @@ public :
 	{
 		boostTime += elapsed;
 		updateLights(boostTime);
-		Avatar->update(elapsed);
-		Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
-		Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
+		//Avatar->update(elapsed);
+		//Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
+		//Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
 	}
 
 	void renderObjects()
@@ -127,7 +127,6 @@ public :
 		glUniform3f(sunColorParam, SunColor.R, SunColor.V, SunColor.B);
 		GLuint camPosParam = glGetUniformLocation(ShaderWorld, "camPos");
 		glUniform3f(camPosParam, Camera->Position.X, Camera->Position.Y, Camera->Position.Z);
-		
 
 		World->render_world_vbo(false, true);
 		glPopMatrix();
@@ -321,7 +320,7 @@ public :
 
 
 	void resize(int width, int height) {
-	
+		Fbo->resize(width, height);
 	}
 
 	/* INPUTS */
@@ -334,7 +333,7 @@ public :
 			boostTime += 10;
 		}
 
-		/*if (down && key == 'z') {
+		if (down && key == 'z') {
 			Camera->move(Camera->Direction * camSpeed);
 		}
 		if (down && key == 's') {
@@ -345,7 +344,7 @@ public :
 		}
 		if (down && key == 'd') {
 			Camera->move(Camera->RightVec * camSpeed);
-		}*/
+		}
 
 		if (key == 'z')
 			Avatar->avance = down;

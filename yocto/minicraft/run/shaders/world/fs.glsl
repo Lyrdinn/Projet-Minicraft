@@ -9,7 +9,10 @@ flat in float type;
 
 #define CUBE_HERBE 0.0
 #define CUBE_TERRE 1.0
+#define CUBE_PIERRE 3.0
 #define CUBE_EAU 4.0
+#define CUBE_TRONC 37.0
+#define CUBE_BRANCHES 38.0
 
 uniform vec3 sunPos;
 uniform float elapsed;
@@ -31,13 +34,9 @@ float noise(vec4 position)
 
 void main()
 {
-
     vec3 SunPosDur = normalize(sunPos);
-
 	vec3 toLight = normalize(sunPos);
-
     vec3 SunColorDur = vec3(sunColor);
-
     vec3 newNorm = normal;
 
     float specular = 0;
@@ -59,15 +58,11 @@ void main()
         halfVec = normalize(halfVec);
         float angle = dot(newNorm,halfVec);
         specular  = pow(abs(angle),300)*50;
-        
-    }    
+    }
 
     float diffuse = max(0,dot(toLight,newNorm));
 
-    color_out = vec4(sqrt(color.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor,color.a);
 
-    //color_out = vec4(toCam,1);
-    
-    //color_out = vec4(sqrt(color.xyz * (diffuse + specular) * 0.97 + 0.03 * sunColor),color.a);
+    color_out = vec4(sqrt(color.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor,sunColor);
 
 }

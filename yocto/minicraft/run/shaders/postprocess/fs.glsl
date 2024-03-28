@@ -27,7 +27,7 @@ void main (void)
 	vec4 color = texture2D( TexColor , uv );
 	float depth = texture2D( TexDepth , uv ).r;	
 	depth = LinearizeDepth(depth);
-
+		
     //Gamma correction
     color.r = pow(color.r,1.0/2.2);
     color.g = pow(color.g,1.0/2.2);

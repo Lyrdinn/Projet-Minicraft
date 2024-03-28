@@ -52,7 +52,7 @@ public:
 			//Remplis au sol
 			if (DoPenaltyBottom && zDecay_Norm < 0.1f) {
 				penalty = (0.1f - zDecay_Norm) / 0.1f;
-				penalty = -pow(penalty, 3);
+				penalty = -pow(penalty, 25);
 				penalty /= 4;
 			}
 		}
