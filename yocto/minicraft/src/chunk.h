@@ -71,6 +71,7 @@ public:
 
 	}
 
+	//Defines one of our vbo's faces. Vbo is the cube, iVertice is our vertice number
 	int addQuadToVbo(YVbo* vbo, int iVertice, YVec3f& a, YVec3f& b, YVec3f& c, YVec3f& d, float type)
 	{
 		YVec3f normal = (b - a).cross(d - a);
@@ -78,14 +79,14 @@ public:
 
 		vbo->setElementValue(0, iVertice, a.X, a.Y, a.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
-		vbo->setElementValue(2, iVertice, 0, 0);
+		vbo->setElementValue(2, iVertice, 0, 0.5);
 		vbo->setElementValue(3, iVertice, type);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, b.X, b.Y, b.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
-		vbo->setElementValue(2, iVertice, 1, 0);
+		vbo->setElementValue(2, iVertice, 1, 0.5);
 		vbo->setElementValue(3, iVertice, type);
 
 		iVertice++;
@@ -99,7 +100,7 @@ public:
 
 		vbo->setElementValue(0, iVertice, a.X, a.Y, a.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
-		vbo->setElementValue(2, iVertice, 0, 0);
+		vbo->setElementValue(2, iVertice, 0, 0.5);
 		vbo->setElementValue(3, iVertice, type);
 
 		iVertice++;
@@ -119,6 +120,82 @@ public:
 		iVertice++;
 
 		return 6;
+	}
+
+	////Defines one of our vbo's faces. Vbo is the cube, iVertice is our vertice number
+	//int addQuadToVbo(YVbo* vbo, int iVertice, YVec3f& a, YVec3f& b, YVec3f& c, YVec3f& d, float type)
+	//{
+	//	YVec3f normal = (b - a).cross(d - a);
+	//	normal.normalize();
+
+	//	vbo->setElementValue(0, iVertice, a.X, a.Y, a.Z);
+	//	vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
+	//	vbo->setElementValue(2, iVertice, 0, 0);
+	//	vbo->setElementValue(3, iVertice, type);
+
+	//	iVertice++;
+
+	//	vbo->setElementValue(0, iVertice, b.X, b.Y, b.Z);
+	//	vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
+	//	vbo->setElementValue(2, iVertice, tex_limit, 0);
+	//	vbo->setElementValue(3, iVertice, type);
+
+	//	iVertice++;
+
+	//	vbo->setElementValue(0, iVertice, c.X, c.Y, c.Z);
+	//	vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
+	//	vbo->setElementValue(2, iVertice, tex_limit, tex_limit);
+	//	vbo->setElementValue(3, iVertice, type);
+
+	//	iVertice++;
+
+	//	vbo->setElementValue(0, iVertice, a.X, a.Y, a.Z);
+	//	vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
+	//	vbo->setElementValue(2, iVertice, 0, 0);
+	//	vbo->setElementValue(3, iVertice, type);
+
+	//	iVertice++;
+
+	//	vbo->setElementValue(0, iVertice, c.X, c.Y, c.Z);
+	//	vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
+	//	vbo->setElementValue(2, iVertice, tex_limit, tex_limit);
+	//	vbo->setElementValue(3, iVertice, type);
+
+	//	iVertice++;
+
+	//	vbo->setElementValue(0, iVertice, d.X, d.Y, d.Z);
+	//	vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z);
+	//	vbo->setElementValue(2, iVertice, 0, tex_limit);
+	//	vbo->setElementValue(3, iVertice, type);
+
+	//	iVertice++;
+
+	//	return 6;
+	//}
+
+	void texture_top_face_vbo(YVbo* vbo, int iVertice)
+	{
+		vbo->setElementValue(2, iVertice, 0, 0);
+
+		iVertice++;
+
+		vbo->setElementValue(2, iVertice, 1, 0);
+
+		iVertice++;
+
+		vbo->setElementValue(2, iVertice, 1, 0.5);
+
+		iVertice++;
+
+		vbo->setElementValue(2, iVertice, 0, 0);
+
+		iVertice++;
+
+		vbo->setElementValue(2, iVertice, 1, 0.5);
+
+		iVertice++;
+
+		vbo->setElementValue(2, iVertice, 0, 0.5);
 	}
 
 	void foreachVisibleTriangle(bool countOnly, int* nbVertOpaque, int* nbVertTransp, YVbo* VboOpaque, YVbo* VboTrasparent)
@@ -226,7 +303,11 @@ public:
 							(!cube->isOpaque() && cubeZNext->getType() != type)) //Je suis un cube transparent et le cube a cote de moi est de l'air (on rend le transparent qu'au contact de l'air)
 						{
 							if (!countOnly)
+							{
 								addQuadToVbo(vbo, *iVertice, c, g, h, d, type); //z+
+								texture_top_face_vbo(vbo, *iVertice);
+							}	
+
 							*iVertice += 6;
 						}
 

@@ -6,14 +6,12 @@ in vec4 color;
 in vec2 uv;
 in vec4 wPos;
 flat in float type;
-  
-in vec2 TexCoord;
 
 #define CUBE_HERBE 0.0
 #define CUBE_TERRE 1.0
+#define CUBE_BOIS 2.0
 #define CUBE_PIERRE 3.0
 #define CUBE_EAU 4.0
-#define CUBE_TRONC 37.0
 #define CUBE_BRANCHES 38.0
 
 uniform vec3 sunPos;
@@ -69,7 +67,6 @@ void main()
 
     //color_out = vec4(sqrt(color.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor,sunColor);
 
-    vec2 newuv = vec2( (uv.x + type) /32, uv.y/2);
+    vec2 newuv = vec2( (uv.x + type) /32, uv.y);
     FragColor = texture(myTexture, newuv);
-
 }

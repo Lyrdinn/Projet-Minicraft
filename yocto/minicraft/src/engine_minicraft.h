@@ -130,10 +130,6 @@ public :
 		//Shader world
 		glPushMatrix();
 
-		//Textures
-		texture_file->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "myTexture");
-
-		glUniform1i(ShaderWorld, 0);
 		glUseProgram(ShaderWorld);
 		//On envoie au shader world nos parametres
 		YRenderer::getInstance()->sendTimeToShader(YEngine::getInstance()->DeltaTimeCumul, YRenderer::CURRENT_SHADER);
@@ -143,6 +139,8 @@ public :
 		glUniform3f(sunColorParam, SunColor.R, SunColor.V, SunColor.B);
 		GLuint camPosParam = glGetUniformLocation(ShaderWorld, "camPos");
 		glUniform3f(camPosParam, Camera->Position.X, Camera->Position.Y, Camera->Position.Z);
+
+		texture_file->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "myTexture");
 
 		World->render_world_vbo(false, true);
 		glPopMatrix();

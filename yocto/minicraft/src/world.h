@@ -247,7 +247,7 @@ public:
 		for (int trunk = 0; trunk < tree_size; trunk++)
 		{
 			MCube* cube = getCube(x, y, z + trunk);
-			cube->setType(MCube::CUBE_TRONC);
+			cube->setType(MCube::CUBE_BOIS);
 		}
 
 		//We fill the trunk with our leaves

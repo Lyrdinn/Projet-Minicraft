@@ -12,8 +12,6 @@ layout(location=1) in vec3 vs_normal_in;
 layout(location=2) in vec2 vs_uv_in;
 layout(location=3) in float vs_type_in;
 
-out vec2 TexCoord;
-
 //Variables en sortie
 out vec3 normal;
 out vec4 color;
@@ -23,9 +21,9 @@ flat out float type;
 
 #define CUBE_HERBE 0.0
 #define CUBE_TERRE 1.0
+#define CUBE_BOIS 2.0
 #define CUBE_PIERRE 3.0
 #define CUBE_EAU 4.0
-#define CUBE_TRONC 37.0
 #define CUBE_BRANCHES 38.0
 
 float noise_water(vec4 position)

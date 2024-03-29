@@ -34,7 +34,7 @@ void main (void)
     color.b = pow(color.b,1.0/2.2);
 
 	// On obtient le fog
-	//color.rgb = mix(color.rgb, sky_color, clamp(pow(depth, 2.f)*20, 0,1));
+	color.rgb = mix(color.rgb, sky_color, clamp(pow(depth, 2.f)*20, 0,1));
 
 	// On calcul l'outline
 	float depthr = texture2D( TexDepth , uv + vec2(xstep, 0) ).r;	
@@ -52,7 +52,7 @@ void main (void)
 	edge = clamp(20*edge,0,1);
 
 	// On ajoute l'edge au fog
-	//color.rgb += edge * vec3(1,1,1);
+	color.rgb += edge * vec3(1,1,1);
 
 	// Couleur finale
 	color_out = vec4(color.rgb,1.0);
