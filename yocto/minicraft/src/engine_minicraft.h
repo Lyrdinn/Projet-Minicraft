@@ -2,11 +2,16 @@
 #define __YOCTO__ENGINE_TEST__
 
 #include "engine/engine.h"
+#include "engine/render/tex_manager.h"
 
 #include "avatar.h"
 #include "world.h"
 
 class MEngineMinicraft : public YEngine {
+	//Textures
+	YTexManager* texture_manager;
+	YTexFile* texture_file;
+
 	//Objets géometriques
 	YFbo* Fbo;
 	YVbo* VboCube;
@@ -47,6 +52,12 @@ public :
 
 	void init() 
 	{
+		//On cree le fichier pour les textures
+		texture_manager = YTexManager::getInstance();
+		texture_file = texture_manager -> loadTextureFromDisk("atlas.png");
+		YTexManager::getInstance()->loadTextureToOgl(*texture_file);
+			
+
 		//On cree le FBO pour le post process
 		Fbo = new YFbo(1);
 		Fbo->init(Renderer->ScreenWidth, Renderer->ScreenHeight);
@@ -118,6 +129,11 @@ public :
 
 		//Shader world
 		glPushMatrix();
+
+		//Textures
+		texture_file->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "myTexture");
+
+		glUniform1i(ShaderWorld, 0);
 		glUseProgram(ShaderWorld);
 		//On envoie au shader world nos parametres
 		YRenderer::getInstance()->sendTimeToShader(YEngine::getInstance()->DeltaTimeCumul, YRenderer::CURRENT_SHADER);

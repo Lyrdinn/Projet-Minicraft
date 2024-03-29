@@ -32,7 +32,7 @@ public:
 	static const int SURFACE_LEVEL = MWorld::MAT_HEIGHT_CUBES - 45;
 
 	static const int NB_OF_TREES_GEN = 1000;
-	static const int MAX_NB_TREES = 100;
+	static const int MAX_NB_TREES = 200;
 
 	MChunk* Chunks[MAT_SIZE][MAT_SIZE][MAT_HEIGHT];
 
@@ -128,7 +128,6 @@ public:
 			Chunks[x / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][(z + 1) / MChunk::CHUNK_SIZE]->disableHiddenCubes();
 			Chunks[x / MChunk::CHUNK_SIZE][y / MChunk::CHUNK_SIZE][(z + 1) / MChunk::CHUNK_SIZE]->toVbos();
 		}
-
 	}
 
 	void deleteCube(int x, int y, int z)
@@ -171,10 +170,6 @@ public:
 					if (val > 0.5f)
 					{
 						cube->setType(MCube::CUBE_HERBE);
-
-						//int rand_tree = rand() % 100 + 0;
-						//if (rand_tree < 1)
-						//can_place_tree(x, y, z + 1);
 					}
 					if (val > 0.51f)
 						cube->setType(MCube::CUBE_TERRE);

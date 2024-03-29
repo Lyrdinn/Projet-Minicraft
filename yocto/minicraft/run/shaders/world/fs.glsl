@@ -6,6 +6,8 @@ in vec4 color;
 in vec2 uv;
 in vec4 wPos;
 flat in float type;
+  
+in vec2 TexCoord;
 
 #define CUBE_HERBE 0.0
 #define CUBE_TERRE 1.0
@@ -19,7 +21,9 @@ uniform float elapsed;
 uniform vec3 camPos;
 uniform vec3 sunColor;
 
-out vec4 color_out;
+uniform sampler2D myTexture;
+
+out vec4 FragColor;
 
 //Globales
 const float ambientLevel = 0.4;
@@ -63,6 +67,9 @@ void main()
     float diffuse = max(0,dot(toLight,newNorm));
 
 
-    color_out = vec4(sqrt(color.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor,sunColor);
+    //color_out = vec4(sqrt(color.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor,sunColor);
+
+    vec2 newuv = vec2( (uv.x + type) /32, uv.y/2);
+    FragColor = texture(myTexture, newuv);
 
 }
