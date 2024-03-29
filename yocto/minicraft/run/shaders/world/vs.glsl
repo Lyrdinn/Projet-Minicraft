@@ -21,14 +21,19 @@ flat out float type;
 
 #define CUBE_HERBE 0.0
 #define CUBE_TERRE 1.0
+#define CUBE_BOIS 2.0
 #define CUBE_PIERRE 3.0
 #define CUBE_EAU 4.0
-#define CUBE_TRONC 37.0
 #define CUBE_BRANCHES 38.0
 
-float noise(vec4 position)
+float noise_water(vec4 position)
 {
     return .5f*sin(position.x/3 + elapsed)-1;
+}
+
+float noise_tree(vec4 position)
+{
+    return .2f*sin(position.y/3 + elapsed)-1;
 }
 
 void main()
@@ -41,30 +46,14 @@ void main()
 
     uv = vs_uv_in;
 
-    //Couleur par défaut violet
-    color = vec4(1.0,1.0,0.0,1.0);
-
     wPos = m * vecIn; 
 
-    //Couleur fonction du type
-    if(vs_type_in == CUBE_HERBE)
-        color = vec4(0,1,0,1);
-    if(vs_type_in == CUBE_TERRE)
-        color = vec4(0.2,0.1,0,1);
-    if (vs_type_in == CUBE_PIERRE){
-        color = vec4(0.03,0.03,0.03,1);
-    }
-    if(vs_type_in == CUBE_EAU){
-        color = vec4(0.0,0.0,1.0,0.7);
-        wPos.z += noise(wPos);
-    }
-    if (vs_type_in == CUBE_TRONC) {
-        color = vec4(168/255, 157/255, 122/255, 1);
+    if(vs_type_in == CUBE_EAU) {
+        wPos.z += noise_water(wPos);
     }
     if (vs_type_in == CUBE_BRANCHES) {
-        color = vec4(0.0, 102/255, 0.0, 1);   
+        wPos.x += noise_tree(wPos);
     }
 
     gl_Position = p * v * wPos;
-                
 }
