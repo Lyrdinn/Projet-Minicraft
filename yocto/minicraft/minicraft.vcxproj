@@ -26,6 +26,7 @@
     <ClInclude Include="src\chunk.h" />
     <ClInclude Include="src\cube.h" />
     <ClInclude Include="src\engine_minicraft.h" />
+    <ClInclude Include="src\particles.h" />
     <ClInclude Include="src\tree.h" />
     <ClInclude Include="src\world.h" />
   </ItemGroup>
@@ -42,6 +43,8 @@
     <None Include="run\shaders\cube_debug\fs.glsl" />
     <None Include="run\shaders\cube_debug\vs.glsl" />
     <None Include="run\shaders\postprocess\fs.glsl" />
+    <None Include="run\shaders\rain\fs.glsl" />
+    <None Include="run\shaders\rain\vs.glsl" />
     <None Include="run\shaders\sun\fs.glsl" />
     <None Include="run\shaders\sun\vs.glsl" />
     <None Include="run\shaders\world\fs.glsl" />
