@@ -116,9 +116,9 @@ public :
 		rainParticles->updateParticles();
 		rainParticles->renderParticules();
 
-		//Avatar->update(elapsed);
-		//Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
-		//Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
+		Avatar->update(elapsed);
+		Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
+		Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
 	}
 
 	void renderObjects()
@@ -372,7 +372,7 @@ public :
 			boostTime += 10;
 		}
 
-		if (down && key == 'z') {
+		/*if (down && key == 'z') {
 			Camera->move(Camera->Direction * camSpeed);
 		}
 		if (down && key == 's') {
@@ -383,7 +383,7 @@ public :
 		}
 		if (down && key == 'd') {
 			Camera->move(Camera->RightVec * camSpeed);
-		}
+		}*/
 
 		if (key == 'z')
 			Avatar->avance = down;
