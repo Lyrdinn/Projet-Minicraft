@@ -64,11 +64,19 @@ void main()
 
         float diffuse = max(0,dot(toLight,newNorm));
 
-        color_out = vec4(0.0,0.0,1.0,1);
-        vec3 lightingColor = sqrt(color_out.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor;
-        color_out = vec4(lightingColor, 0.8);
-    }
+        // Textures
+        vec2 newuv = vec2((uv.x + type) / 32.0, uv.y);
+        vec4 textureColor = texture(myTexture, newuv);
+        textureColor.z = 1.0;
 
+        // Lighting calculations
+        vec3 lightingColor = sqrt(textureColor.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor;
+        lightingColor.z = 1.0;
+
+        // Output the final color
+        FragColor = vec4(lightingColor, textureColor.a); // Assuming you want to retain alpha from the texture
+        color_out = vec4(FragColor.xyz, 1); // Assuming color_out is used for further processing 
+    }
     else
     {
         float diffuse = max(0,dot(toLight,newNorm));
@@ -78,10 +86,11 @@ void main()
         vec4 textureColor = texture(myTexture, newuv);
 
         // Lighting calculations
-        vec3 lightingColor = sqrt(textureColor.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor/10;
+        vec3 lightingColor = sqrt(textureColor.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor;
 
         // Output the final color
         FragColor = vec4(lightingColor, textureColor.a); // Assuming you want to retain alpha from the texture
         color_out = vec4(FragColor.xyz, 1); // Assuming color_out is used for further processing   
-    }
+    
+    }  
 }
