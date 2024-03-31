@@ -27,14 +27,17 @@ void main (void)
 	vec4 color = texture2D( TexColor , uv );
 	float depth = texture2D( TexDepth , uv ).r;	
 	depth = LinearizeDepth(depth);
-		
+
     //Gamma correction
-    color.r = pow(color.r,1.0/2.2);
-    color.g = pow(color.g,1.0/2.2);
-    color.b = pow(color.b,1.0/2.2);
+    //color.r = pow(color.r,1.0);
+    //color.g = pow(color.g,1.0);
+    //color.b = pow(color.b,1.0);
 
 	// On obtient le fog
-	color.rgb = mix(color.rgb, sky_color, clamp(pow(depth, 2.f)*20, 0,1));
+	if (depth < 0.5)
+	{
+		//color.rgb = mix(color.rgb, sky_color, clamp(pow(depth, 2.f)*15, 0,1));
+	}
 
 	// On calcul l'outline
 	float depthr = texture2D( TexDepth , uv + vec2(xstep, 0) ).r;	
@@ -55,5 +58,5 @@ void main (void)
 	color.rgb += edge * vec3(1,1,1);
 
 	// Couleur finale
-	color_out = vec4(color.rgb,1.0);
+	color_out = vec4(color.rgb,0.7);
 }

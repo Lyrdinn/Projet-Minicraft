@@ -22,6 +22,7 @@ uniform vec3 sunColor;
 uniform sampler2D myTexture;
 
 out vec4 FragColor;
+out vec4 color_out;
 
 //Globales
 const float ambientLevel = 0.4;
@@ -40,8 +41,15 @@ void main()
 	vec3 toLight = normalize(sunPos);
     vec3 SunColorDur = vec3(sunColor);
     vec3 newNorm = normal;
+    vec3 lightingColor = vec3(0.0,0.0,0.0);
+
 
     float specular = 0;
+    float diffuse = 0;
+
+    // Textures
+    vec2 newuv = vec2((uv.x + type) / 32.0, uv.y);
+    vec4 textureColor = texture(myTexture, newuv);
 
     if(type == CUBE_EAU)
     {
@@ -59,14 +67,23 @@ void main()
         vec3 halfVec = normalize(SunPosDur) + toCam;
         halfVec = normalize(halfVec);
         float angle = dot(newNorm,halfVec);
-        specular  = pow(abs(angle),300)*50;
+        specular  = pow(abs(angle),100);
+
+        diffuse = max(0,dot(toLight,newNorm))/2;
+
+        // Lighting calculations
+        lightingColor = sqrt(textureColor.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor;
+        lightingColor.z = 1.0;
+    }
+    else
+    {
+        diffuse = max(0,dot(toLight,newNorm))/2;
+
+        // Lighting calculations
+        lightingColor = sqrt(textureColor.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor;
     }
 
-    float diffuse = max(0,dot(toLight,newNorm));
-
-
-    //color_out = vec4(sqrt(color.xyz * diffuse + SunColorDur.xyz * specular * 0.97) + 0.03 * sunColor,sunColor);
-
-    vec2 newuv = vec2( (uv.x + type) /32, uv.y);
-    FragColor = texture(myTexture, newuv);
+    // Output the final color
+    FragColor = vec4(lightingColor, textureColor.a); // Assuming you want to retain alpha from the texture
+    color_out = vec4(FragColor.xyz, 1); // Assuming color_out is used for further processing 
 }

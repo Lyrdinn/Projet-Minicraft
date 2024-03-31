@@ -35,7 +35,9 @@ void main (void)
     color.b = pow(color.b,1.0/2.2);
 
 	if(uv.x > 0.5f)
-		color.rgb = vec3(depth,depth,depth);
+	{
+		color.rgb = vec3(depth,depth,depth);	
+	}
 
 	color_out = vec4(color.rgb,1.0);
 }

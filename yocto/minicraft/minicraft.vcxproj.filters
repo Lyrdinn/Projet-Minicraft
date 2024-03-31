@@ -71,6 +71,9 @@
     <ClInclude Include="src\tree.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="src\particles.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -117,5 +120,7 @@
     <None Include="run\shaders\cube_debug\vs.glsl">
       <Filter>shaders\cube_debug</Filter>
     </None>
+    <None Include="run\shaders\rain\vs.glsl" />
+    <None Include="run\shaders\rain\fs.glsl" />
   </ItemGroup>
 </Project>

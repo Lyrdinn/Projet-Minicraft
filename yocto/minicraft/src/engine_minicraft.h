@@ -6,6 +6,7 @@
 
 #include "avatar.h"
 #include "world.h"
+#include "particles.h"
 
 class MEngineMinicraft : public YEngine {
 	//Textures
@@ -16,6 +17,9 @@ class MEngineMinicraft : public YEngine {
 	YFbo* Fbo;
 	YVbo* VboCube;
 	YVbo* VboSun;
+
+	//Particles
+	ParticlesSystem* rainParticles;
 
 	//Avatar
 	YCamera* Camera = new YCamera();
@@ -29,6 +33,7 @@ class MEngineMinicraft : public YEngine {
 	GLuint ShaderSun = 0;
 	GLuint ShaderWorld = 0;
 	GLuint ShaderPostProcess = 0;
+	GLuint ShaderRain = 0;
 	YColor SunColor;
 	YColor SkyColor;
 	YVec3<float> SunPosition = YVec3<float>(1.0f, 1.0f, 1.0f);
@@ -48,6 +53,7 @@ public :
 		ShaderSun = Renderer->createProgram("shaders/sun");
 		ShaderWorld = Renderer->createProgram("shaders/world");
 		ShaderPostProcess = Renderer->createProgram("shaders/postprocess");
+		ShaderRain = Renderer->createProgram("shaders/rain");
 	}
 
 	void init() 
@@ -97,12 +103,19 @@ public :
 		World = new MWorld();
 		Avatar = new MAvatar(Camera, World);
 		World->init_world(0);
+
+		//Particules de pluie
+		rainParticles = new ParticlesSystem(Camera, 100, 10, 30, 5);
 	}
 
 	void update(float elapsed) 
 	{
 		boostTime += elapsed;
 		updateLights(boostTime);
+
+		rainParticles->updateParticles(elapsed);
+		rainParticles->renderParticules();
+
 		//Avatar->update(elapsed);
 		//Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
 		//Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
@@ -157,6 +170,18 @@ public :
 
 		VboSun->render();
 		glPopMatrix();
+
+		//Particles
+		glPushMatrix();
+		glUseProgram(ShaderRain);
+		glScalef(10, 10, 10);
+		Renderer->updateMatricesFromOgl();
+		Renderer->sendMatricesToShader(ShaderRain);
+
+		rainParticles->renderParticules();
+
+		glPopMatrix();
+
 
 		//Post Process
 		Fbo->setAsOutFBO(false);
@@ -360,7 +385,7 @@ public :
 			Camera->move(Camera->RightVec * camSpeed);
 		}
 
-		if (key == 'z')
+		/*if (key == 'z')
 			Avatar->avance = down;
 		if (key == 's')
 			Avatar->recule = down;
@@ -382,7 +407,7 @@ public :
 				Camera->Position + Camera->Direction * 30,
 				inter, xC, yC, zC);
 			World->deleteCube(xC, yC, zC);
-		}
+		}*/
 	}
 
 	void mouseWheel(int wheel, int dir, int x, int y, bool inUi)
