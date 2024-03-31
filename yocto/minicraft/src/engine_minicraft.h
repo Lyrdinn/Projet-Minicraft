@@ -94,9 +94,6 @@ public :
 		VboSun->createVboGpu();
 		VboSun->deleteVboCpu();
 
-		//Particules de pluie
-		rainParticles = new ParticlesSystem(3);
-
 		//Caméra
 		Camera->setPosition(YVec3f((MWorld::MAT_SIZE_METERS) / 2, (MWorld::MAT_SIZE_METERS) / 2, (MWorld::MAT_HEIGHT_METERS)));
 		Camera->setLookAt(YVec3f());
@@ -106,6 +103,9 @@ public :
 		World = new MWorld();
 		Avatar = new MAvatar(Camera, World);
 		World->init_world(0);
+
+		//Particules de pluie
+		rainParticles = new ParticlesSystem(Camera, 100, 10, 30, 5);
 	}
 
 	void update(float elapsed) 
@@ -113,12 +113,12 @@ public :
 		boostTime += elapsed;
 		updateLights(boostTime);
 
-		rainParticles->updateParticles();
+		rainParticles->updateParticles(elapsed);
 		rainParticles->renderParticules();
 
-		Avatar->update(elapsed);
-		Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
-		Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
+		//Avatar->update(elapsed);
+		//Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
+		//Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
 	}
 
 	void renderObjects()
@@ -372,7 +372,7 @@ public :
 			boostTime += 10;
 		}
 
-		/*if (down && key == 'z') {
+		if (down && key == 'z') {
 			Camera->move(Camera->Direction * camSpeed);
 		}
 		if (down && key == 's') {
@@ -383,9 +383,9 @@ public :
 		}
 		if (down && key == 'd') {
 			Camera->move(Camera->RightVec * camSpeed);
-		}*/
+		}
 
-		if (key == 'z')
+		/*if (key == 'z')
 			Avatar->avance = down;
 		if (key == 's')
 			Avatar->recule = down;
@@ -407,7 +407,7 @@ public :
 				Camera->Position + Camera->Direction * 30,
 				inter, xC, yC, zC);
 			World->deleteCube(xC, yC, zC);
-		}
+		}*/
 	}
 
 	void mouseWheel(int wheel, int dir, int x, int y, bool inUi)
