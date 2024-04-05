@@ -68,7 +68,7 @@
     <ClInclude Include="src\mperlin.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="src\tree.h">
+    <ClInclude Include="src\proc_generation.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="src\particles.h">
