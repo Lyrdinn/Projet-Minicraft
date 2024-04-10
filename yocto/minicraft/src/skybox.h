@@ -11,6 +11,9 @@ public:
 	YTexManager* texture_manager;
 	YTexFile* skybox;
 
+	float width = 1.0 / 4.0;
+	float height = 1.0 / 3.0;
+
 	GLuint ShaderSkybox = 0;
 
 	YSkybox(YRenderer* Renderer)
@@ -45,15 +48,15 @@ public:
 		YVec3f g(-size / 2.0f + x, size / 2.0f + y, size / 2.0f + z);
 		YVec3f h(-size / 2.0f + x, -size / 2.0f + y, size / 2.0f + z);
 
-		iVertice += CreateSquareFace(vbo, iVertice, a, b, c, d); //x+
-		iVertice += CreateSquareFace(vbo, iVertice, f, e, h, g); //x-
-		iVertice += CreateSquareFace(vbo, iVertice, b, f, g, c); //y+
-		iVertice += CreateSquareFace(vbo, iVertice, e, a, d, h); //y-
-		iVertice += CreateSquareFace(vbo, iVertice, c, g, h, d); //z+
-		iVertice += CreateSquareFace(vbo, iVertice, e, f, b, a); //z-
+		iVertice += CreateSquareFace(vbo, iVertice, a, b, c, d, 0.0, 1.0); //x+
+		iVertice += CreateSquareFace(vbo, iVertice, f, e, h, g, 2.0, 1.0); //x-
+		iVertice += CreateSquareFace(vbo, iVertice, b, f, g, c, 1.0, 1.0); //y+
+		iVertice += CreateSquareFace(vbo, iVertice, e, a, d, h, 3.0, 1.0); //y-
+		iVertice += CreateSquareFace(vbo, iVertice, c, g, h, d, 2.0, 2.0); //z+
+		iVertice += CreateSquareFace(vbo, iVertice, e, f, b, a, 2.0, 0.0); //z-
 	}
 
-	int CreateSquareFace(YVbo* vbo, int iVertice, YVec3f& a, YVec3f& b, YVec3f& c, YVec3f& d)
+	int CreateSquareFace(YVbo* vbo, int iVertice, YVec3f& a, YVec3f& b, YVec3f& c, YVec3f& d, float uvx, float uvy)
 	{
 		YVec3f normal = (b - a).cross(d - a);
 		normal.normalize();
@@ -63,39 +66,42 @@ public:
 		//
 		// D   C
 
+		float uvX = uvx * width;
+		float uvY = uvy * height;
+
 		vbo->setElementValue(0, iVertice, a.X, a.Y, a.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 0, 0);
+		vbo->setElementValue(2, iVertice, uvX, uvY);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, b.X, b.Y, b.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 0);
+		vbo->setElementValue(2, iVertice, uvX + 1 * width, uvY);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, c.X, c.Y, c.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 1);
+		vbo->setElementValue(2, iVertice, uvX + 1 * width, uvY + 1 * height);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, a.X, a.Y, a.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 0, 0);
+		vbo->setElementValue(2, iVertice, uvX, uvY);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, c.X, c.Y, c.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 1);
+		vbo->setElementValue(2, iVertice, uvX + 1 * width, uvY + 1 * height);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, d.X, d.Y, d.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 0, 1);
+		vbo->setElementValue(2, iVertice, uvX, uvY + 1 * height);
 
 		iVertice++;
 
