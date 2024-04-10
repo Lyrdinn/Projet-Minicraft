@@ -1,7 +1,9 @@
-#version 330 core
+#version 400
 
 in vec2 uv;
 in vec3 TexCoord;
+
+uniform sampler2D myTexture;
 
 uniform sampler2D skybox_front;
 uniform sampler2D skybox_back;

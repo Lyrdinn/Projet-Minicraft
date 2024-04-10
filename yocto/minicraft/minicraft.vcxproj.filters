@@ -125,4 +125,12 @@
     <None Include="run\shaders\skybox\fs.glsl" />
     <None Include="run\shaders\skybox\vs.glsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\top.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\back.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\bottom.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\front.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\left.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\right.jpg" />
+  </ItemGroup>
 </Project>

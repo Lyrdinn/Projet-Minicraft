@@ -52,6 +52,14 @@
     <None Include="run\shaders\world\fs.glsl" />
     <None Include="run\shaders\world\vs.glsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\back.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\bottom.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\front.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\left.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\right.jpg" />
+    <Image Include="..\..\..\..\..\..\Downloads\skybox\skybox\top.jpg" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{17FD557D-42BC-4AF9-ABD2-025A8F8A621D}</ProjectGuid>

@@ -13,16 +13,6 @@ class MEngineMinicraft : public YEngine {
 	YTexManager* texture_manager;
 	YTexFile* texture_file;
 
-	vector<std::string> faces
-	{
-		"right.jpg",
-		"left.jpg",
-		"top.jpg",
-		"bottom.jpg",
-		"front.jpg",
-		"back.jpg"
-	};
-	//unsigned int cubemapTexture = loadCubemap(faces);
 	YTexManager* texture_manager_sky;
 	YTexFile* skybox_right;
 	YTexFile* skybox_left;
@@ -123,7 +113,7 @@ public :
 		VboSkybox->setElementDescription(2, YVbo::Element(2)); //UV
 
 		VboSkybox->createVboCpu();
-		fillVBOCube(VboSkybox, 0, 0, 0, 100);
+		fillVBOCube(VboSkybox, 0, 0, -5, 1000);
 		VboSkybox->createVboGpu();
 		VboSkybox->deleteVboCpu();
 
@@ -192,7 +182,7 @@ public :
 		glUniform3f(sunColorParamSky, SunColor.R, SunColor.V, SunColor.B);
 		//glRotatef(Camera->FovY, Camera->LookAt.X, Camera->LookAt.Y, Camera->LookAt.Z);
 		glTranslatef(Camera->Position.X, Camera->Position.Y, Camera->Position.Z);
-		glScalef(10, 10, 10);
+		glScalef(1, 1, 1);
 
 		skybox_right->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_right");
 		skybox_left->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_left");
