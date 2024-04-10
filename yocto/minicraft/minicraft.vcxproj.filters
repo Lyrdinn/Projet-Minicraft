@@ -122,5 +122,7 @@
     </None>
     <None Include="run\shaders\rain\vs.glsl" />
     <None Include="run\shaders\rain\fs.glsl" />
+    <None Include="run\shaders\skybox\fs.glsl" />
+    <None Include="run\shaders\skybox\vs.glsl" />
   </ItemGroup>
 </Project>

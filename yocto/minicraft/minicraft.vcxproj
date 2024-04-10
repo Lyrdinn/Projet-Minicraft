@@ -45,6 +45,8 @@
     <None Include="run\shaders\postprocess\fs.glsl" />
     <None Include="run\shaders\rain\fs.glsl" />
     <None Include="run\shaders\rain\vs.glsl" />
+    <None Include="run\shaders\skybox\fs.glsl" />
+    <None Include="run\shaders\skybox\vs.glsl" />
     <None Include="run\shaders\sun\fs.glsl" />
     <None Include="run\shaders\sun\vs.glsl" />
     <None Include="run\shaders\world\fs.glsl" />

@@ -13,10 +13,28 @@ class MEngineMinicraft : public YEngine {
 	YTexManager* texture_manager;
 	YTexFile* texture_file;
 
+	vector<std::string> faces
+	{
+		"right.jpg",
+		"left.jpg",
+		"top.jpg",
+		"bottom.jpg",
+		"front.jpg",
+		"back.jpg"
+	};
+	//unsigned int cubemapTexture = loadCubemap(faces);
+	YTexFile* skybox_right;
+	YTexFile* skybox_left;
+	YTexFile* skybox_top;
+	YTexFile* skybox_bottom;
+	YTexFile* skybox_front;
+	YTexFile* skybox_back;
+
 	//Objets géometriques
 	YFbo* Fbo;
 	YVbo* VboCube;
 	YVbo* VboSun;
+	YVbo* VboSkybox;
 
 	//Particles
 	ParticlesSystem* rainParticles;
@@ -34,6 +52,7 @@ class MEngineMinicraft : public YEngine {
 	GLuint ShaderWorld = 0;
 	GLuint ShaderPostProcess = 0;
 	GLuint ShaderRain = 0;
+	GLuint ShaderSkybox = 0;
 	YColor SunColor;
 	YColor SkyColor;
 	YVec3<float> SunPosition = YVec3<float>(1.0f, 1.0f, 1.0f);
@@ -53,7 +72,8 @@ public :
 		ShaderSun = Renderer->createProgram("shaders/sun");
 		ShaderWorld = Renderer->createProgram("shaders/world");
 		ShaderPostProcess = Renderer->createProgram("shaders/postprocess");
-		ShaderRain = Renderer->createProgram("shaders/rain");
+		//ShaderRain = Renderer->createProgram("shaders/rain");
+		ShaderSkybox = Renderer->createProgram("shaders/skybox");
 	}
 
 	void init() 
@@ -62,6 +82,13 @@ public :
 		texture_manager = YTexManager::getInstance();
 		texture_file = texture_manager -> loadTextureFromDisk("atlas.png");
 		YTexManager::getInstance()->loadTextureToOgl(*texture_file);
+
+		YTexFile* skybox_right = texture_manager->loadTextureFromDisk("right.jpg");
+		YTexFile* skybox_left = texture_manager->loadTextureFromDisk("left.jpg");
+		YTexFile* skybox_top = texture_manager->loadTextureFromDisk("top.jpg");
+		YTexFile* skybox_bottom = texture_manager->loadTextureFromDisk("bottom.jpg");
+		YTexFile* skybox_front = texture_manager->loadTextureFromDisk("front.jpg");
+		YTexFile* skybox_back = texture_manager->loadTextureFromDisk("back.jpg");
 			
 
 		//On cree le FBO pour le post process
@@ -76,18 +103,29 @@ public :
 		VboCube = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
 		VboCube->setElementDescription(0, YVbo::Element(3)); //Sommet
 		VboCube->setElementDescription(1, YVbo::Element(4)); //Normale
-		VboCube->setElementDescription(2, YVbo::Element(3)); //Couleur
+		VboCube->setElementDescription(2, YVbo::Element(2)); //UV
 
 		VboCube->createVboCpu();
 		fillVBOCube(VboCube, 0, 0, 0, 2);
 		VboCube->createVboGpu();
 		VboCube->deleteVboCpu();
 
+		//Cube pour la skybox
+		VboSkybox = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
+		VboSkybox->setElementDescription(0, YVbo::Element(3)); //Sommet
+		VboSkybox->setElementDescription(1, YVbo::Element(4)); //Normale
+		VboSkybox->setElementDescription(2, YVbo::Element(2)); //UV
+
+		VboSkybox->createVboCpu();
+		fillVBOCube(VboSkybox, 0, 0, 0, 100);
+		VboSkybox->createVboGpu();
+		VboSkybox->deleteVboCpu();
+
 		//Cube pour le soleil
 		VboSun = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
 		VboSun->setElementDescription(0, YVbo::Element(3)); //Sommet
 		VboSun->setElementDescription(1, YVbo::Element(4)); //Normale
-		VboSun->setElementDescription(2, YVbo::Element(3)); //Couleur
+		VboSun->setElementDescription(2, YVbo::Element(2)); //UV
 
 		VboSun->createVboCpu();
 		fillVBOCube(VboSun, 0, 0, 10, 2);
@@ -105,7 +143,7 @@ public :
 		World->init_world(0);
 
 		//Particules de pluie
-		rainParticles = new ParticlesSystem(Camera, 100, 10, 30, 5);
+		//rainParticles = new ParticlesSystem(Camera, 100, 10, 30, 5);
 	}
 
 	void update(float elapsed) 
@@ -113,8 +151,8 @@ public :
 		boostTime += elapsed;
 		updateLights(boostTime);
 
-		rainParticles->updateParticles(elapsed);
-		rainParticles->renderParticules();
+		//rainParticles->updateParticles(elapsed);
+		//rainParticles->renderParticules();
 
 		//Avatar->update(elapsed);
 		//Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
@@ -158,6 +196,27 @@ public :
 		World->render_world_vbo(false, true);
 		glPopMatrix();
 
+		//Shader Skybox
+		glPushMatrix();
+		glUseProgram(ShaderSkybox);
+		GLuint sunColorParamSky = glGetUniformLocation(ShaderSkybox, "sunColor");
+		glUniform3f(sunColorParamSky, SunColor.R, SunColor.V, SunColor.B);
+		//glRotatef(Camera->FovY, Camera->LookAt.X, Camera->LookAt.Y, Camera->LookAt.Z);
+		glTranslatef(Camera->Position.X, Camera->Position.Y, Camera->Position.Z);
+		glScalef(10, 10, 10);
+		Renderer->updateMatricesFromOgl();
+		Renderer->sendMatricesToShader(ShaderSkybox);
+
+		skybox_right->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_right");
+		skybox_left->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_left");
+		skybox_top->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_top");
+		skybox_bottom->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_bottom");
+		skybox_front->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_front");
+		skybox_back->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_back");
+
+		VboSkybox->render();
+		glPopMatrix();
+
 		//Shader Sun
 		glPushMatrix();
 		glUseProgram(ShaderSun);
@@ -172,7 +231,7 @@ public :
 		glPopMatrix();
 
 		//Particles
-		glPushMatrix();
+		/*glPushMatrix();
 		glUseProgram(ShaderRain);
 		glScalef(10, 10, 10);
 		Renderer->updateMatricesFromOgl();
@@ -180,7 +239,7 @@ public :
 
 		rainParticles->renderParticules();
 
-		glPopMatrix();
+		glPopMatrix();*/
 
 
 		//Post Process
@@ -247,37 +306,37 @@ public :
 
 		vbo->setElementValue(0, iVertice, a.X, a.Y, a.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 1, 1);
+		vbo->setElementValue(2, iVertice, 0, 0);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, b.X, b.Y, b.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 1, 1);
+		vbo->setElementValue(2, iVertice, 1, 0);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, c.X, c.Y, c.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 1, 1);
+		vbo->setElementValue(2, iVertice, 1, 1);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, a.X, a.Y, a.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 1, 1);
+		vbo->setElementValue(2, iVertice, 0, 0);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, c.X, c.Y, c.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 1, 1);
+		vbo->setElementValue(2, iVertice, 1, 1);
 
 		iVertice++;
 
 		vbo->setElementValue(0, iVertice, d.X, d.Y, d.Z);
 		vbo->setElementValue(1, iVertice, normal.X, normal.Y, normal.Z, 1);
-		vbo->setElementValue(2, iVertice, 1, 1, 1);
+		vbo->setElementValue(2, iVertice, 0, 1);
 
 		iVertice++;
 
