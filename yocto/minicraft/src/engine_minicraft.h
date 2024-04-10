@@ -7,19 +7,15 @@
 #include "avatar.h"
 #include "world.h"
 #include "particles.h"
+#include "skybox.h"
 
 class MEngineMinicraft : public YEngine {
+	//Skybox
+	YSkybox* skybox;
+
 	//Textures
 	YTexManager* texture_manager;
 	YTexFile* texture_file;
-
-	YTexManager* texture_manager_sky;
-	YTexFile* skybox_right;
-	YTexFile* skybox_left;
-	YTexFile* skybox_top;
-	YTexFile* skybox_bottom;
-	YTexFile* skybox_front;
-	YTexFile* skybox_back;
 
 	//Objets géometriques
 	YFbo* Fbo;
@@ -64,28 +60,18 @@ public :
 		ShaderWorld = Renderer->createProgram("shaders/world");
 		ShaderPostProcess = Renderer->createProgram("shaders/postprocess");
 		//ShaderRain = Renderer->createProgram("shaders/rain");
-		ShaderSkybox = Renderer->createProgram("shaders/skybox");
 	}
 
 	void init() 
 	{
+
 		//On cree le fichier pour les textures
 		texture_manager = YTexManager::getInstance();
 		texture_file = texture_manager -> loadTextureFromDisk("atlas.png");
 		texture_manager->loadTextureToOgl(*texture_file);
 
-		skybox_right = texture_manager->loadTextureFromDisk("right.png");
-		skybox_left = texture_manager->loadTextureFromDisk("left.png");
-		skybox_top = texture_manager->loadTextureFromDisk("top.png");
-		skybox_bottom = texture_manager->loadTextureFromDisk("bottom.png");
-		skybox_front = texture_manager->loadTextureFromDisk("front.png");
-		skybox_back = texture_manager->loadTextureFromDisk("back.png");
-		texture_manager->loadTextureToOgl(*skybox_right);
-		texture_manager->loadTextureToOgl(*skybox_left);
-		texture_manager->loadTextureToOgl(*skybox_top);
-		texture_manager->loadTextureToOgl(*skybox_bottom);
-		texture_manager->loadTextureToOgl(*skybox_front);
-		texture_manager->loadTextureToOgl(*skybox_back);
+		//Skybox
+		skybox = new YSkybox(Renderer);
 
 		//On cree le FBO pour le post process
 		Fbo = new YFbo(1);
@@ -103,19 +89,10 @@ public :
 
 		VboCube->createVboCpu();
 		fillVBOCube(VboCube, 0, 0, 0, 2);
+
 		VboCube->createVboGpu();
 		VboCube->deleteVboCpu();
 
-		//Cube pour la skybox
-		VboSkybox = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
-		VboSkybox->setElementDescription(0, YVbo::Element(3)); //Sommet
-		VboSkybox->setElementDescription(1, YVbo::Element(4)); //Normale
-		VboSkybox->setElementDescription(2, YVbo::Element(2)); //UV
-
-		VboSkybox->createVboCpu();
-		fillVBOCube(VboSkybox, 0, 0, -5, 1000);
-		VboSkybox->createVboGpu();
-		VboSkybox->deleteVboCpu();
 
 		//Cube pour le soleil
 		VboSun = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
@@ -175,27 +152,7 @@ public :
 		glEnd();
 
 		//Shader Skybox
-		glPushMatrix();
-		glUseProgram(ShaderSkybox);
-		glDepthMask(GL_TRUE);
-		GLuint sunColorParamSky = glGetUniformLocation(ShaderSkybox, "sunColor");
-		glUniform3f(sunColorParamSky, SunColor.R, SunColor.V, SunColor.B);
-		//glRotatef(Camera->FovY, Camera->LookAt.X, Camera->LookAt.Y, Camera->LookAt.Z);
-		glTranslatef(Camera->Position.X, Camera->Position.Y, Camera->Position.Z);
-		glScalef(1, 1, 1);
-
-		skybox_right->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_right");
-		skybox_left->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_left");
-		skybox_top->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_top");
-		skybox_bottom->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_bottom");
-		skybox_front->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_front");
-		skybox_back->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_back");
-
-		Renderer->updateMatricesFromOgl();
-		Renderer->sendMatricesToShader(ShaderSkybox);
-
-		VboSkybox->render();
-		glPopMatrix();
+		skybox->RenderSkyBox(Camera, SunColor, Renderer);
 
 		//Shader world
 		glPushMatrix();

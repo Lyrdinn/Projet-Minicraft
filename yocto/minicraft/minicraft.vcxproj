@@ -28,6 +28,7 @@
     <ClInclude Include="src\engine_minicraft.h" />
     <ClInclude Include="src\particles.h" />
     <ClInclude Include="src\proc_generation.h" />
+    <ClInclude Include="src\skybox.h" />
     <ClInclude Include="src\world.h" />
   </ItemGroup>
   <ItemGroup>
