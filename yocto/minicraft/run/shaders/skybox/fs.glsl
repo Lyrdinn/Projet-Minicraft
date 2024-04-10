@@ -6,20 +6,17 @@ in vec3 TexCoord;
 uniform sampler2D myTexture;
 
 uniform sampler2D skybox;
-
-uniform sampler2D skybox_front;
-uniform sampler2D skybox_back;
-uniform sampler2D skybox_left;
-uniform sampler2D skybox_right;
-uniform sampler2D skybox_top;
-uniform sampler2D skybox_bottom;
+uniform vec3 sunColor;
 
 out vec4 FragColor;
 out vec4 color_out;
 
 void main()
 {
-    FragColor = texture(skybox, uv);
-      
-    color_out = vec4(FragColor.xyz, 1);
+    vec4 textureColor = texture(skybox, uv);
+    vec3 lightingColor = textureColor.xyz * (sunColor);
+
+    FragColor = textureColor;
+    FragColor.w = 0.5;
+    color_out = vec4(FragColor.xyz, 1.0);
 }
