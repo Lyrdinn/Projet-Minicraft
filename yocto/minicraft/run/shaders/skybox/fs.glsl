@@ -32,7 +32,7 @@ void main()
     } 
     else if (-maxVal.y == absTexCoord.y) {
         FragColor = texture(skybox_bottom, uv);
-    } 
+    }
     else {
         FragColor = texture(skybox_back, uv);
     }

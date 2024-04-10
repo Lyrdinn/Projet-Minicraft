@@ -23,6 +23,7 @@ class MEngineMinicraft : public YEngine {
 		"back.jpg"
 	};
 	//unsigned int cubemapTexture = loadCubemap(faces);
+	YTexManager* texture_manager_sky;
 	YTexFile* skybox_right;
 	YTexFile* skybox_left;
 	YTexFile* skybox_top;
@@ -81,15 +82,20 @@ public :
 		//On cree le fichier pour les textures
 		texture_manager = YTexManager::getInstance();
 		texture_file = texture_manager -> loadTextureFromDisk("atlas.png");
-		YTexManager::getInstance()->loadTextureToOgl(*texture_file);
+		texture_manager->loadTextureToOgl(*texture_file);
 
-		YTexFile* skybox_right = texture_manager->loadTextureFromDisk("right.jpg");
-		YTexFile* skybox_left = texture_manager->loadTextureFromDisk("left.jpg");
-		YTexFile* skybox_top = texture_manager->loadTextureFromDisk("top.jpg");
-		YTexFile* skybox_bottom = texture_manager->loadTextureFromDisk("bottom.jpg");
-		YTexFile* skybox_front = texture_manager->loadTextureFromDisk("front.jpg");
-		YTexFile* skybox_back = texture_manager->loadTextureFromDisk("back.jpg");
-			
+		skybox_right = texture_manager->loadTextureFromDisk("right.png");
+		skybox_left = texture_manager->loadTextureFromDisk("left.png");
+		skybox_top = texture_manager->loadTextureFromDisk("top.png");
+		skybox_bottom = texture_manager->loadTextureFromDisk("bottom.png");
+		skybox_front = texture_manager->loadTextureFromDisk("front.png");
+		skybox_back = texture_manager->loadTextureFromDisk("back.png");
+		texture_manager->loadTextureToOgl(*skybox_right);
+		texture_manager->loadTextureToOgl(*skybox_left);
+		texture_manager->loadTextureToOgl(*skybox_top);
+		texture_manager->loadTextureToOgl(*skybox_bottom);
+		texture_manager->loadTextureToOgl(*skybox_front);
+		texture_manager->loadTextureToOgl(*skybox_back);
 
 		//On cree le FBO pour le post process
 		Fbo = new YFbo(1);
@@ -178,6 +184,29 @@ public :
 		glVertex3d(0, 0, 10000);
 		glEnd();
 
+		//Shader Skybox
+		glPushMatrix();
+		glUseProgram(ShaderSkybox);
+		glDepthMask(GL_TRUE);
+		GLuint sunColorParamSky = glGetUniformLocation(ShaderSkybox, "sunColor");
+		glUniform3f(sunColorParamSky, SunColor.R, SunColor.V, SunColor.B);
+		//glRotatef(Camera->FovY, Camera->LookAt.X, Camera->LookAt.Y, Camera->LookAt.Z);
+		glTranslatef(Camera->Position.X, Camera->Position.Y, Camera->Position.Z);
+		glScalef(10, 10, 10);
+
+		skybox_right->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_right");
+		skybox_left->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_left");
+		skybox_top->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_top");
+		skybox_bottom->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_bottom");
+		skybox_front->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_front");
+		skybox_back->setAsShaderInput(ShaderSkybox, GL_TEXTURE0, "skybox_back");
+
+		Renderer->updateMatricesFromOgl();
+		Renderer->sendMatricesToShader(ShaderSkybox);
+
+		VboSkybox->render();
+		glPopMatrix();
+
 		//Shader world
 		glPushMatrix();
 
@@ -194,27 +223,6 @@ public :
 		texture_file->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "myTexture");
 
 		World->render_world_vbo(false, true);
-		glPopMatrix();
-
-		//Shader Skybox
-		glPushMatrix();
-		glUseProgram(ShaderSkybox);
-		GLuint sunColorParamSky = glGetUniformLocation(ShaderSkybox, "sunColor");
-		glUniform3f(sunColorParamSky, SunColor.R, SunColor.V, SunColor.B);
-		//glRotatef(Camera->FovY, Camera->LookAt.X, Camera->LookAt.Y, Camera->LookAt.Z);
-		glTranslatef(Camera->Position.X, Camera->Position.Y, Camera->Position.Z);
-		glScalef(10, 10, 10);
-		Renderer->updateMatricesFromOgl();
-		Renderer->sendMatricesToShader(ShaderSkybox);
-
-		skybox_right->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_right");
-		skybox_left->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_left");
-		skybox_top->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_top");
-		skybox_bottom->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_bottom");
-		skybox_front->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_front");
-		skybox_back->setAsShaderInput(ShaderWorld, GL_TEXTURE0, "skybox_back");
-
-		VboSkybox->render();
 		glPopMatrix();
 
 		//Shader Sun
