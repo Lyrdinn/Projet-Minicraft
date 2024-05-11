@@ -156,7 +156,7 @@ public:
 
 		for (int x = 0; x < MAT_SIZE_CUBES; x++)
 			for (int y = 0; y < MAT_SIZE_CUBES; y++)
-				for (int z = MAT_HEIGHT_CUBES; z > 0; z--)
+				for (int z = 45; z > 0; z--)
 				{
 					Perlin.DoPenaltyMiddle = true;
 					Perlin.setFreq(0.04f);
@@ -169,10 +169,14 @@ public:
 
 					if (val > 0.5f)
 					{
-						cube->setType(MCube::CUBE_HERBE);
+						if (z < 24) cube->setType(MCube::CUBE_PIERRE);
+						else cube->setType(MCube::CUBE_HERBE);
 					}
 					if (val > 0.51f)
-						cube->setType(MCube::CUBE_TERRE);
+					{
+						if (z < 24) cube->setType(MCube::CUBE_PIERRE);
+						else cube->setType(MCube::CUBE_TERRE);
+					}
 					if (val < 0.5 && z <= 0.1)
 						cube->setType(MCube::CUBE_EAU);
 					if (val > 0.56)

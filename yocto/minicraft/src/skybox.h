@@ -21,7 +21,7 @@ public:
 		ShaderSkybox = Renderer->createProgram("shaders/skybox");
 
 		texture_manager = YTexManager::getInstance();
-		skybox = texture_manager->loadTextureFromDisk("FS000_Day_01.png");
+		skybox = texture_manager->loadTextureFromDisk("FS000_Day_02_Sunless.png");
 		texture_manager->loadTextureToOgl(*skybox);
 
 		VboSkybox = new YVbo(3, 36, YVbo::PACK_BY_ELEMENT_TYPE);
@@ -30,11 +30,12 @@ public:
 		VboSkybox->setElementDescription(2, YVbo::Element(2)); //UV
 
 		VboSkybox->createVboCpu();
-		fillVBOCube(VboSkybox, 0, 0, -5, 1000);
+		fillVBOCube(VboSkybox, 0, 0, 0, 1000);
 		VboSkybox->createVboGpu();
 		VboSkybox->deleteVboCpu();
 	}
 
+	//Redefined the function to take in account the texture
 	void fillVBOCube(YVbo* vbo, int x, int y, int z, float size = 5.0f)
 	{
 		int iVertice = 0;
