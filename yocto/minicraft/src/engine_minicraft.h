@@ -101,7 +101,7 @@ public :
 		VboSun->setElementDescription(2, YVbo::Element(2)); //UV
 
 		VboSun->createVboCpu();
-		fillVBOCube(VboSun, 0, 0, 10, 2);
+		fillVBOCube(VboSun, 0, 0, 3, 2);
 		VboSun->createVboGpu();
 		VboSun->deleteVboCpu();
 
@@ -127,9 +127,9 @@ public :
 		//rainParticles->updateParticles(elapsed);
 		//rainParticles->renderParticules();
 
-		//Avatar->update(elapsed);
-		//Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
-		//Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
+		Avatar->update(elapsed);
+		Avatar->Run = GetKeyState(VK_LSHIFT) & 0x80;
+		Renderer->Camera->moveTo(Avatar->Position + YVec3f(0, 0, Avatar->CurrentHeight / 2));
 	}
 
 	void renderObjects()
@@ -399,7 +399,7 @@ public :
 			Camera->move(Camera->RightVec * camSpeed);
 		}
 
-		/*if (key == 'z')
+		if (key == 'z')
 			Avatar->avance = down;
 		if (key == 's')
 			Avatar->recule = down;
@@ -421,7 +421,7 @@ public :
 				Camera->Position + Camera->Direction * 30,
 				inter, xC, yC, zC);
 			World->deleteCube(xC, yC, zC);
-		}*/
+		}
 	}
 
 	void mouseWheel(int wheel, int dir, int x, int y, bool inUi)
