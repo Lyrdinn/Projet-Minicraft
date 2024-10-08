@@ -18,7 +18,7 @@
   <img src="screenshots/level3.png" width="350" title="Level 3 with shows our biggest level">
 </p>
 
-Un jeu fait par [Marina SECORD](https://github.com/Lyrdinn/) et [Nino SANDLARZ](https://github.com/Sand-Fox)
+Trailer : https://www.youtube.com/watch?v=0yXIqEj37sA
 
 <p>
 
@@ -35,9 +35,9 @@ Our basic implementation was :
 
 What I did on top of that : 
 
-- Procedurally generated trees with their shaders
+- Procedurally generated trees with their own shaders
 - Redid the terrain to my liking
-- Textures and I reapplied color and lightning to them
+- Textures with correct color and lightning
 - A skybox using cubemaps
-- (I tried to add rain particles but I couldn't)
+- (I tried to add rain particles but it proved to be too difficult)
 </p>
