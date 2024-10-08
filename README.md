@@ -29,8 +29,8 @@ We had to do a replica of Minecraft using C++, OpenGL and our teacher's  Guillau
 Our basic implementation was :
 
 - Create a map of cubes using perlin noise
-- Create a camera and movements
-- Create a basic water and post processing shader
+- Create a camera and a player controller
+- Add water and post processing shaders
 
 
 What I did on top of that : 
