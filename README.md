@@ -8,14 +8,14 @@
 
 
 <p align="center">
-  <img src="screenshots/menu.png" width="350" title="Menu screen">
-  <img src="screenshots/win.png" width="350" title="Win screen">
+  <img src="screenshots/minicraft2.png" width="350" title="Screenshots">
+  <img src="screenshots/minicraft3.png" width="350" title="Screenshots">
 </p>
 
 <p align="center">
-  <img src="screenshots/level1.png" width="350" title="Level 1 with keys and doors">
-  <img src="screenshots/level2.png" width="350" title="Level 2 with portals">
-  <img src="screenshots/level3.png" width="350" title="Level 3 with shows our biggest level">
+  <img src="screenshots/minicraft4.png" width="350" title="Screenshots">
+  <img src="screenshots/minicraft5.png" width="350" title="Screenshots">
+  <img src="screenshots/minicraft6.png" width="350" title="Screenshots">
 </p>
 
 Trailer : https://www.youtube.com/watch?v=0yXIqEj37sA
