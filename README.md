@@ -1,4 +1,4 @@
-<h1 align="center">  Larcin Lazer </h1>
+<h1 align="center">  Minicraft </h1>
 
 <p align="center">
 <img alt="Static Badge" src="https://img.shields.io/badge/Made%20in%20C%2B%2B-2d6eb3?style=flat-square&logo=c%2B%2B">
@@ -22,17 +22,22 @@ Un jeu fait par [Marina SECORD](https://github.com/Lyrdinn/) et [Nino SANDLARZ](
 
 <p>
 
-Le jeu Larcin Lazer appartient à Doc Geraud et nous avons fait celui ci en ASCII à but éducatif dans le cadre d'un TP pour l'ENJMIN.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Nous avons réalisés pour ce projet :
-- Un jeu avec une architecture bas niveau comprenant 6 niveaux et des menus
-- Un système de sprites et de gestion de scène complexe et propre
-- Plusieurs types de dalles avec lasers, clef/porte, diamants gardés en mémoire, portails
+Made in CNAM-ENJMIN.
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Controles :
+We had to do a replica of Minecraft using C++, OpenGL and our teacher's  Guillaume LeVieux's engine that helped us speed up the process
 
-- ZQSD pour se déplacer
-- U pour confirmer
-- ESC pour quitter/retourner dans les menus
+Our basic implementation was :
+
+- Create a map of cubes using perlin noise
+- Create a camera and movements
+- Create a basic water and post processing shader
+
+
+What I did on top of that : 
+
+- Procedurally generated trees with their shaders
+- Redid the terrain to my liking
+- Textures and I reapplied color and lightning to them
+- A skybox using cubemaps
+- (I tried to add rain particles but I couldn't)
 </p>
